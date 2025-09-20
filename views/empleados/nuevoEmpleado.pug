@@ -1,0 +1,68 @@
+extends ../layout
+
+block contenido
+  .container
+    .row.justify-content-center
+      .col-md-6
+        h2.text-center.mb-4 Crear Nuevo Empleado
+
+        if mensajeError
+          .alert.alert-danger(role="alert")= mensajeError
+
+        form(method="POST", action="/empleados/nuevo")
+          .mb-3
+            label.form-label(for="nombre") Nombre:
+            input.form-control(type="text", name="nombre", required)
+
+          .mb-3
+            label.form-label(for="dni") Documento:
+            input.form-control(type="text", name="dni", required)
+
+          .mb-3
+            label.form-label(for="rol") Rol:
+            select.form-select(name="rol", id="rolSelect", required)
+              option(value="", disabled selected) Selecciona un rol
+              each rol in roles
+                option(value=rol)= rol
+
+          .mb-3
+            label.form-label(for="area") Área:
+            select.form-select(name="area", id="areaSelect", required)
+              option(value="", disabled selected) Selecciona un área
+              each area in areas
+                option(value=area)= area
+
+          .text-center
+            button.btn.btn-success(type="submit") Guardar
+
+  script.
+    const areasPorRol = {
+      "Administrador": ["Administración de Turnos", "Facturación"],
+      "Médico": ["Atención Médica"],
+      "Recepcionista": ["Administración de Turnos", "Facturación"],
+      "Encargado de Stock": ["Gestión de Insumos Médicos"]
+    };
+
+    const rolSelect = document.getElementById('rolSelect');
+    const areaSelect = document.getElementById('areaSelect');
+
+    rolSelect.addEventListener('change', () => {
+      const rol = rolSelect.value;
+      const areasValidas = areasPorRol[rol] || [];
+
+      areaSelect.innerHTML = '';
+
+      const defaultOption = document.createElement('option');
+      defaultOption.value = '';
+      defaultOption.disabled = true;
+      defaultOption.selected = true;
+      defaultOption.textContent = 'Selecciona un área';
+      areaSelect.appendChild(defaultOption);
+
+      areasValidas.forEach(a => {
+        const option = document.createElement('option');
+        option.value = a;
+        option.textContent = a;
+        areaSelect.appendChild(option);
+      });
+    });

@@ -1,0 +1,103 @@
+extends ../layout
+
+block contenido
+  .container
+    .row.justify-content-center
+      .col-md-8
+        h2.text-center.mb-4 Editar Tarea
+
+        if mensajeError
+          .alert.alert-danger(role="alert")= mensajeError
+
+        form(method="POST", action=`/tareas/actualizar/${tarea.id}`)
+          .mb-3
+            label.form-label(for="area") Área:
+            select.form-select(name="area", id="areaSelect", required)
+              each a in areas
+                if a === tarea.area
+                  option(value=a, selected)= a
+                else
+                  option(value=a)= a
+
+          .mb-3
+            label.form-label(for="titulo") Título de la Tarea:
+            select.form-select(name="titulo", id="tituloSelect", required)
+            
+          .mb-3
+            label.form-label(for="documentoEmpleado") Documento del Empleado:
+            input.form-control(type="text", name="documentoEmpleado", id="documentoEmpleado", value=tarea.empleado, required)
+
+          .mb-3
+            label.form-label(for="paciente") Documento del Paciente:
+            input.form-control(type="text", name="paciente", id="pacienteInput", value=tarea.paciente)
+
+          .mb-3
+            label.form-label(for="proveedor") Proveedor:
+            input.form-control(type="text", name="proveedor", id="proveedorInput", value=tarea.proveedor)
+
+          .mb-3
+            label.form-label(for="estado") Estado:
+            select.form-select(name="estado")
+              option(value="pendiente", selected=tarea.estado==='pendiente') Pendiente
+              option(value="en proceso", selected=tarea.estado==='en proceso') En Proceso
+              option(value="completada", selected=tarea.estado==='completada') Completada
+
+          .mb-3
+            label.form-label(for="prioridad") Prioridad:
+            select.form-select(name="prioridad")
+              option(value="baja", selected=tarea.prioridad==='baja') Baja
+              option(value="media", selected=tarea.prioridad==='media') Media
+              option(value="alta", selected=tarea.prioridad==='alta') Alta
+
+          .mb-3
+            label.form-label(for="fechaInicio") Fecha Inicio:
+            input.form-control(type="date", name="fechaInicio", value=tarea.fechaInicio)
+
+          .mb-3
+            label.form-label(for="fechaFin") Fecha Fin:
+            input.form-control(type="date", name="fechaFin", value=tarea.fechaFin)
+
+          .mb-3
+            label.form-label(for="observaciones") Observaciones:
+            textarea.form-control(name="observaciones", rows="3")= tarea.observaciones
+
+          .text-center.mb-4
+            button.btn.btn-success(type="submit") Guardar Cambios
+
+  script.
+    const tareasPosibles = !{JSON.stringify(tareasPosibles)};
+    const areaSelect = document.getElementById('areaSelect');
+    const tituloSelect = document.getElementById('tituloSelect');
+    const pacienteInput = document.getElementById('pacienteInput');
+    const proveedorInput = document.getElementById('proveedorInput');
+    const documentoEmpleado = document.getElementById('documentoEmpleado');
+
+    function actualizarTitulosYCampos() {
+      const area = areaSelect.value;
+      const titulos = tareasPosibles[area] || [];
+      
+      tituloSelect.innerHTML = '';
+      titulos.forEach(t => {
+        const option = document.createElement('option');
+        option.value = t;
+        option.textContent = t;
+        if(t === !{JSON.stringify(tarea.titulo)}) option.selected = true;
+        tituloSelect.appendChild(option);
+      });
+
+      if (area === 'Administración de Turnos') {
+        pacienteInput.disabled = false;
+        proveedorInput.disabled = true;
+        proveedorInput.value = '';
+      } else if (area === 'Gestión de Insumos Médicos') {
+        pacienteInput.disabled = true;
+        pacienteInput.value = '';
+        proveedorInput.disabled = false;
+      } else {
+        pacienteInput.disabled = false;
+        proveedorInput.disabled = false;
+      }
+    }
+
+    areaSelect.addEventListener('change', actualizarTitulosYCampos);
+    window.addEventListener('DOMContentLoaded', actualizarTitulosYCampos);

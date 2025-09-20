@@ -1,0 +1,12 @@
+[
+  { "id": 1, "nombre": "María López", "dni": "12345678", "telefono": "111-222-333" },
+  { "id": 2, "nombre": "Juan Pérez", "dni": "87654321", "telefono": "444-555-666" },
+  { "id": 3, "nombre": "Lucía Fernández", "dni": "23456789", "telefono": "222-333-444" },
+  { "id": 4, "nombre": "Carlos Gómez", "dni": "98765432", "telefono": "555-666-777" },
+  { "id": 5, "nombre": "Sofía Ramírez", "dni": "34567890", "telefono": "333-444-555" },
+  { "id": 6, "nombre": "Diego Torres", "dni": "87651234", "telefono": "666-777-888" },
+  { "id": 7, "nombre": "Valentina Díaz", "dni": "45678901", "telefono": "444-555-666" },
+  { "id": 8, "nombre": "Matías Herrera", "dni": "76543210", "telefono": "777-888-999" },
+  { "id": 9, "nombre": "Camila Sánchez", "dni": "56789012", "telefono": "555-666-777" },
+  { "id": 10, "nombre": "Fernando Ruiz", "dni": "65432109", "telefono": "888-999-000" }
+]

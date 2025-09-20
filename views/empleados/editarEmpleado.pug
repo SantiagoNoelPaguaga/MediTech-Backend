@@ -1,0 +1,66 @@
+extends ../layout
+
+block contenido
+  .container
+    .row.justify-content-center
+      .col-md-6
+        h2.text-center.mb-4 Editar Empleado
+
+        if mensajeError
+          .alert.alert-danger(role="alert")= mensajeError
+
+        form(method="POST", action=`/empleados/actualizar/${empleado.id}`)
+          .mb-3
+            label.form-label(for="nombre") Nombre:
+            input.form-control(type="text", name="nombre", value=empleado.nombre, required)
+
+          .mb-3
+            label.form-label(for="dni") Documento:
+            input.form-control(type="text", name="dni", value=empleado.dni, required)
+
+          .mb-3
+            label.form-label(for="rol") Rol:
+            select.form-select(name="rol", id="rolSelect", required)
+              each rol in roles
+                if rol === empleado.rol
+                  option(value=rol, selected)= rol
+                else
+                  option(value=rol)= rol
+
+          .mb-3
+            label.form-label(for="area") Área:
+            select.form-select(name="area", id="areaSelect", required)
+      
+          .text-center
+            button.btn.btn-primary(type="submit") Guardar Cambios
+
+  script.
+    const areasPorRol = {
+      "Administrador": ["Administración de Turnos", "Facturación"],
+      "Médico": ["Atención Médica"],
+      "Recepcionista": ["Administración de Turnos", "Facturación"],
+      "Encargado de Stock": ["Gestión de Insumos Médicos"]
+    };
+
+    const rolSelect = document.getElementById('rolSelect');
+    const areaSelect = document.getElementById('areaSelect');
+    const empleadoArea = !{JSON.stringify(empleado.area)};
+
+    function actualizarAreas() {
+      const rol = rolSelect.value;
+      const areasValidas = areasPorRol[rol] || [];
+
+      areaSelect.innerHTML = '';
+
+      areasValidas.forEach(a => {
+        const option = document.createElement('option');
+        option.value = a;
+        option.textContent = a;
+        if (a === empleadoArea) option.selected = true;
+        areaSelect.appendChild(option);
+      });
+    }
+
+    rolSelect.addEventListener('change', actualizarAreas);
+
+    window.addEventListener('DOMContentLoaded', actualizarAreas);
