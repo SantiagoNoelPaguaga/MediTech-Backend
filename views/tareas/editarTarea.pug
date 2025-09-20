@@ -85,11 +85,11 @@ block contenido
         tituloSelect.appendChild(option);
       });
 
-      if (area === 'Administración de Turnos') {
+      if (["Administración de Turnos", "Atención Médica", "Facturación"].includes(area)) {
         pacienteInput.disabled = false;
         proveedorInput.disabled = true;
         proveedorInput.value = '';
-      } else if (area === 'Gestión de Insumos Médicos') {
+      } else if (area === "Gestión de Insumos Médicos") {
         pacienteInput.disabled = true;
         pacienteInput.value = '';
         proveedorInput.disabled = false;
