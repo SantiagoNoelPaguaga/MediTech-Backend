@@ -8,7 +8,7 @@
 </p>
 
 
-## Table of contents
+## Tabla de contenidos
 
 - [Funcionamiento](#funcionamiento)
 - [Creadores](#creadores)
