@@ -1,28 +1,26 @@
 doctype html
 html
   head
-    title= titulo
-    meta(charset='utf-8')
-    meta(name='viewport', content='width=device-width, initial-scale=1')
-    link(rel='stylesheet', href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css')
+    title Clínica Salud
+    link(rel="icon" type="image/png" href="/images/logo_clinica.jpeg")
+    link(rel="stylesheet" href="/stylesheets/global.css")
+    link(rel="stylesheet" href="/stylesheets/layout.css")  
+    link(rel="stylesheet" href="/stylesheets/sidebar/sidebar.css")
+    link(rel="stylesheet" href="/stylesheets/footer/footer.css")
+    link(rel="stylesheet" href="/stylesheets/mixin/title.css")
+    link(rel="stylesheet" href="/stylesheets/mixin/modal.css")
+    link(rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css")
+    block head 
   body
-    nav.navbar.navbar-dark.bg-dark.flex-column
-      .container-fluid.flex-column
-        .w-100.text-center.pb-2.border-bottom
-          a.navbar-brand.fs-2.fw-bold.text-light(href='/') Clínica Médica
+    .layoutContainer
+      .layoutBackground
+        include ./sidebar/sidebar.pug
+        main.mainWrapper
+          block content  // aquí se renderiza el contenido de cada ruta
 
-        .w-100.d-flex.py-2
-          .w-50.d-flex.justify-content-center
-            ul.nav.navbar-nav.flex-row
-              li.nav-item
-                a.nav-link.text-light.fs-5(href='/empleados') Empleados
+      include ./footer/footer.pug
 
-          .w-50.d-flex.justify-content-center
-            ul.nav.navbar-nav.flex-row
-              li.nav-item
-                a.nav-link.text-light.fs-5(href='/tareas') Tareas
-
-    main.container.mt-4
-      block contenido
-
-    script(src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js')
+    script(src="/javascripts/sidebar/sidebar.js")
+    script(src="/javascripts/mixin/deleteModal.js")
+    script(src="/javascripts/mixin/errorModal.js")
+    block scripts
