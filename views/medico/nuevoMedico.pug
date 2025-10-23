@@ -1,0 +1,88 @@
+extends ../layout
+include ../mixin/title.pug
+include ../mixin/modal.pug
+
+block head
+    link(rel="stylesheet" href="/stylesheets/medico/forms-medico.css")
+
+block content
+    +SectionTitle('REGISTRAR MÉDICO')
+
+    form(id="formMedico" action="/medicos/new" method="POST")
+        label(for="nombre") Nombre
+        input(
+            type="text"
+            name="nombre"
+            id="nombre"
+            placeholder="Ingrese el nombre"
+            value=(formData && formData.nombre || '')
+        )
+
+        label(for="apellido") Apellido
+        input(
+            type="text"
+            name="apellido"
+            id="apellido"
+            placeholder="Ingrese el apellido"
+            value=(formData && formData.apellido || '')
+        )
+
+        label(for="matricula") Matrícula
+        input(
+            type="text"
+            name="matricula"
+            id="matricula"
+            placeholder="Ingrese la matrícula"
+            value=(formData && formData.matricula || '')
+        )
+
+        label(for="dni") DNI
+        input(
+            type="text"
+            name="dni"
+            id="dni"
+            placeholder="Ingrese el DNI"
+            value=(formData && formData.dni || '')
+        )
+
+        label(for="telefono") Teléfono
+        input(
+            type="text"
+            name="telefono"
+            id="telefono"
+            placeholder="Ingrese el teléfono"
+            value=(formData && formData.telefono || '')
+        )
+
+        label(for="email") Email
+        input(
+            type="email"
+            name="email"
+            id="email"
+            placeholder="Ingrese el email"
+            value=(formData && formData.email || '')
+        )
+
+        label(for="domicilio") Domicilio
+        input(
+            type="text"
+            name="domicilio"
+            id="domicilio"
+            placeholder="Ingrese el domicilio"
+            value=(formData && formData.domicilio || '')
+        )
+
+        label(for="especialidades") Especialidades
+        select(name="especialidades" id="especialidades" multiple)
+            each esp in especialidades
+                option(
+                    value=esp.nombre
+                    selected=(formData && formData.especialidades && formData.especialidades.includes(esp.nombre))
+                )= esp.nombre
+
+        button(type="submit") Registrar médico
+
+    if modalMessage
+        +Modal('modalGeneric', modalTitle, modalMessage, modalType)
+
+

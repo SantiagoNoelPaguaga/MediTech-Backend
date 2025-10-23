@@ -1,0 +1,77 @@
+extends ../layout
+include ../mixin/title.pug
+include ../mixin/modal.pug
+
+block head
+  link(rel="stylesheet" href="/stylesheets/medico/medicos.css")
+
+block content
+  +SectionTitle('LISTA DE MÉDICOS')
+
+  .top-bar
+    a.btn-add(href="/medicos/new")
+      i(class="fas fa-user-md")
+      |  Nuevo Médico
+    form.search-form(action="/medicos" method="GET")
+      input(type="text" name="dni" placeholder="Buscar por DNI...", value=dni || "")
+      button(type="submit")
+        i(class="fas fa-search")
+        | Buscar
+
+  .cards-container
+    if medicos.length
+      each medico in medicos
+        .card
+          .card-header
+            h3= medico.nombre + " " + medico.apellido
+          .card-body
+            p
+              strong DNI:
+              |  #{medico.dni}
+            p
+              strong Matrícula:
+              |  #{medico.matricula}
+            p
+              strong Teléfono:
+              |  #{medico.telefono}
+            p
+              strong Email:
+              |  #{medico.email}
+            p
+              strong Domicilio:
+              |  #{medico.domicilio}
+            if medico.especialidades && medico.especialidades.length
+              p
+                strong Especialidades:
+                |  #{medico.especialidades.join(', ')}
+            else
+              p
+                strong Especialidades:
+                |  No registradas
+          .card-actions
+            a(href=`/medicos/edit/${medico._id}`, title="Editar")
+              i.fas.fa-edit
+            form(action=`/medicos/delete/${medico._id}` method="POST" class="delete-form")
+              input(type="hidden" name="_method" value="DELETE")
+              button(type="submit" title="Eliminar")
+                i.fas.fa-trash
+    else
+      p.no-results No se encontraron médicos.
+
+  if totalPages > 1
+    .pagination
+      .page-buttons
+        if page > 1
+          a.page-link(href=`?page=${page - 1}`)
+            i(class="fas fa-arrow-left fa-sm")
+            |  Anterior
+        if page < totalPages
+          a.page-link(href=`?page=${page + 1}`)
+            |  Siguiente
+            i(class="fas fa-arrow-right fa-sm")
+      span.page-info Página #{page} de #{totalPages}
+
+  +Modal('confirmModal', 'Confirmar eliminación', '¿Estás seguro de que deseas eliminar este médico?', 'confirm')
+
+block scripts
+  script(src="/javascripts/mixin/deleteModal.js")
