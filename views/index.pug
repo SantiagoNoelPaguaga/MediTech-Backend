@@ -1,1 +1,26 @@
 extends layout
+
+include ./mixin/title.pug
+
+block head
+    link(rel="stylesheet" href="/stylesheets/index.css")
+
+block content
+    +SectionTitle('CLÍNICA SALUD')
+
+    section#welcome
+        h2 Bienvenido al panel de administración
+        p Selecciona una opción del menú para comenzar
+
+    section#modulos
+        h2 Módulos
+        .cards
+            .card
+                h3 Pacientes
+                button(onclick="window.location='/pacientes'") Ir
+            .card
+                h3 Médicos
+                button(onclick="window.location='/medicos'") Ir
+            .card
+                h3 Turnos
+                button(onclick="window.location='/turnos'") Ir
