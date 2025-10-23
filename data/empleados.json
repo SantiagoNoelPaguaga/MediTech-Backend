@@ -1,1 +1,9 @@
-[]
+[
+  {
+    "id": 1,
+    "nombre": "Ana García",
+    "rol": "Médico",
+    "area": "Atención Médica",
+    "dni": "11111111"
+  }
+]
