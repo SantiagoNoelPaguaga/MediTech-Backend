@@ -6,7 +6,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import methodOverride from "method-override";
 import pacientesRouter from "./routes/pacientesRouter.js";
-// import medicosRouter from "./routes/medicosRouter.js";
+import medicosRouter from "./routes/medicosRouter.js";
 // import turnosRouter from "./routes/turnosRouter.js";
 
 dotenv.config();
@@ -43,7 +43,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/pacientes", pacientesRouter);
-// app.use("/medicos", medicosRouter);
+app.use("/medicos", medicosRouter);
 // app.use("/turnos", turnosRouter);
 
 app.listen(PORT, () => console.log(`Servidor en http://localhost:${PORT}/`));
