@@ -36,18 +36,15 @@ async function crearTarea(datos) {
   const empleados = await leerJSON(fileEmpleados);
   const pacientes = await leerJSON(filePacientes);
 
-  //Solo se permiten áreas que estén en areas.json
   if (!areasValidas.includes(datos.area)) {
     throw new Error(`Área inválida. Valores permitidos: ${areasValidas.join(', ')}`);
   }
 
-  //Convierte todos los títulos de todas las áreas en un solo arreglo y verifica que el título enviado exista
   const titulosValidos = Object.values(tareasTitulos).flat();
   if (!titulosValidos.includes(datos.titulo)) {
     throw new Error(`Tarea inválida. Valores permitidos: ${titulosValidos.join(', ')}`);
   }
 
-  //Verifica que haya un empleado con ese DNI
   if (
     !empleados.some(
       e => e.dni === datos.empleado
@@ -56,7 +53,6 @@ async function crearTarea(datos) {
     throw new Error('Empleado asignado no existe.');
   }
 
-  //Solo valida si el campo paciente fue enviado
   if (
     datos.paciente &&
     !pacientes.some(p => p.dni === datos.paciente)
@@ -64,15 +60,12 @@ async function crearTarea(datos) {
     throw new Error('Paciente asignado no existe.');
   }
 
-  //Generación de ID
-  //Si hay tareas, toma el último ID y le suma 1. Si no hay, empieza en 1
   const tareas = await listarTareas();
   const nuevaTarea = {
     id: tareas.length ? tareas[tareas.length - 1].id + 1 : 1,
     ...datos
   };
 
-  //Sobrescribe el archivo tareas.json con el nuevo arreglo que incluye la tarea creada
   tareas.push(nuevaTarea);
   await guardarJSON(fileTareas, tareas);
   return nuevaTarea;
