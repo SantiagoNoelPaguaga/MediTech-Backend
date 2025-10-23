@@ -1,0 +1,44 @@
+extends ../layout
+include ../mixin/title.pug
+include ../mixin/modal.pug
+
+block head
+    link(rel="stylesheet" href="/stylesheets/paciente/forms-paciente.css")
+
+block content
+    +SectionTitle('ACTUALIZAR PACIENTE')
+
+    form(id="formPaciente" action=`/pacientes/edit/${paciente._id}` method="POST")
+        input(type="hidden" name="_method" value="PUT")
+
+        label(for="nombre") Nombre
+        input(type="text" name="nombre" id="nombre" value=(paciente && paciente.nombre ? paciente.nombre : ''))
+
+        label(for="apellido") Apellido
+        input(type="text" name="apellido" id="apellido" value=(paciente && paciente.apellido ? paciente.apellido : ''))
+
+        label(for="dni") DNI
+        input(type="text" name="dni" id="dni" value=(paciente && paciente.dni ? paciente.dni : ''))
+
+        label(for="cobertura") Cobertura
+        select(name="cobertura" id="cobertura")
+            option(value="") Seleccione una cobertura
+            each cobertura in coberturas
+                option(
+                    value=cobertura.nombre
+                    selected=(paciente && paciente.cobertura === cobertura.nombre)
+                )= cobertura.nombre
+
+        label(for="email") Email
+        input(type="email" name="email" id="email" value=(paciente && paciente.email ? paciente.email : ''))
+
+        label(for="telefono") Teléfono
+        input(type="text" name="telefono" id="telefono" value=(paciente && paciente.telefono ? paciente.telefono : ''))
+
+        label(for="domicilio") Domicilio
+        input(type="text" name="domicilio" id="domicilio" value=(paciente && paciente.domicilio ? paciente.domicilio : ''))
+
+        button(type="submit") Guardar cambios
+
+    if modalMessage
+        +Modal('modalGeneric', modalTitle, modalMessage, modalType)
