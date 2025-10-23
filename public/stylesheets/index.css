@@ -1,0 +1,91 @@
+section#welcome,
+section#modulos {
+  padding: 4rem 1rem 0 1rem;
+  max-width: 70rem;
+  margin: auto;
+  text-align: center;
+}
+
+#welcome h2 {
+  font-family: "Montserrat", sans-serif;
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+#modulos h2 {
+  font-family: "Montserrat", sans-serif;
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+#welcome p {
+  font-family: "Roboto", sans-serif;
+  font-size: 1.1rem;
+  color: #555;
+  line-height: 1.6;
+}
+
+.cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2rem;
+  margin-top: 3rem;
+}
+
+.card {
+  flex: 0 1 20rem;
+  max-width: 22rem;
+  background: linear-gradient(135deg, #f9f4f0, #e6d7d1);
+  color: #333;
+  border-radius: 1rem;
+  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
+  text-align: center;
+  overflow: hidden;
+  transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
+  padding: 2rem 1.5rem;
+}
+
+.card:hover {
+  transform: translateY(-0.5rem);
+  box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.15);
+  background: linear-gradient(135deg, #f4eae5, #d9cfc7);
+}
+
+.card h3 {
+  margin: 1rem 0 1.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.card button {
+  font-family: "Roboto", sans-serif;
+  display: block;
+  width: 70%;
+  margin: 0.75rem auto 0;
+  padding: 0.75rem;
+  background: #8b0000;
+  color: #fff;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+}
+
+.card button:hover {
+  background: #a00000;
+  transform: translateY(-2px);
+}
+
+@media (max-width: 900px) {
+  .card {
+    flex: 0 1 45%;
+  }
+}
+
+@media (max-width: 600px) {
+  .card {
+    flex: 0 1 100%;
+  }
+}
