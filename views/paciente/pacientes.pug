@@ -1,0 +1,67 @@
+extends ../layout
+include ../mixin/title.pug
+include ../mixin/modal.pug
+
+block head
+    link(rel="stylesheet" href="/stylesheets/paciente/pacientes.css")
+
+block content
+    +SectionTitle('LISTA DE PACIENTES')
+
+    .top-bar
+        a.btn-add(href="/pacientes/new")
+            i(class="fas fa-user-plus")
+            |  Nuevo Paciente
+        form.search-form(action="/pacientes" method="GET")
+            input(type="text" name="dni" placeholder="Buscar por DNI...", value=dni || "")
+            button(type="submit")
+                i(class="fas fa-search")
+                | Buscar
+
+    .cards-container
+        if pacientes.length
+            each paciente in pacientes
+                .card
+                    .card-header
+                        h3= paciente.nombre + " " + paciente.apellido
+                    .card-body
+                        p
+                            strong DNI:
+                            |  #{paciente.dni}
+                        p
+                            strong Cobertura:
+                            |  #{paciente.cobertura}
+                        p
+                            strong Email:
+                            |  #{paciente.email}
+                        p
+                            strong Teléfono:
+                            |  #{paciente.telefono}
+                        p
+                            strong Domicilio:
+                            |  #{paciente.domicilio}
+                    .card-actions
+                        a(href=`/pacientes/edit/${paciente._id}`, title="Editar")
+                            i.fas.fa-edit
+                        form(action=`/pacientes/delete/${paciente._id}` method="POST" class="delete-form")
+                            input(type="hidden" name="_method" value="DELETE")
+                            button(type="submit" title="Eliminar")
+                                i.fas.fa-trash
+        else
+            p.no-results No se encontraron pacientes.
+
+    if totalPages > 1
+        .pagination
+            .page-buttons
+                if page > 1
+                    a.page-link(href=`?page=${page - 1}`)
+                        i(class="fas fa-arrow-left fa-sm")
+                        |  Anterior
+                if page < totalPages
+                    a.page-link(href=`?page=${page + 1}`)
+                        |  Siguiente
+                        i(class="fas fa-arrow-right fa-sm")
+            span.page-info Página #{page} de #{totalPages}
+
+    +Modal('confirmModal', 'Confirmar eliminación', '¿Estás seguro de que deseas eliminar este paciente?', 'confirm')
+
