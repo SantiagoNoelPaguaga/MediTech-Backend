@@ -1,0 +1,12 @@
+mixin Modal(id, title = '', message = '', type = 'info')
+    .modal(role="dialog" aria-modal="true" aria-hidden="true" data-type=type id=id)
+        .modal-content
+            if title
+                h3= title
+            p#modalMessage= message
+            .modal-actions
+                if type === 'confirm'
+                    button#confirmYes(type="button") Sí
+                    button#confirmNo(type="button") No
+                else
+                    button#closeModal(type="button") Cerrar

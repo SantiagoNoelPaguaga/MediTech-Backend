@@ -1,0 +1,78 @@
+extends ../layout
+include ../mixin/title.pug
+include ../mixin/modal.pug
+
+block head
+    link(rel="stylesheet" href="/stylesheets/paciente/forms-paciente.css")
+
+block content
+    +SectionTitle('REGISTRAR PACIENTE')
+
+    form(id="formPaciente" action="/pacientes/new" method="POST")
+        label(for="nombre") Nombre
+        input(
+            type="text"
+            name="nombre"
+            id="nombre"
+            placeholder="Ingrese el nombre"
+            value=(formData && formData.nombre ? formData.nombre : '')
+        )
+
+        label(for="apellido") Apellido
+        input(
+            type="text"
+            name="apellido"
+            id="apellido"
+            placeholder="Ingrese el apellido"
+            value=(formData && formData.apellido ? formData.apellido : '')
+        )
+
+        label(for="dni") DNI
+        input(
+            type="text"
+            name="dni"
+            id="dni"
+            placeholder="Ingrese el DNI"
+            value=(formData && formData.dni ? formData.dni : '')
+        )
+
+        label(for="cobertura") Cobertura
+        select(name="cobertura" id="cobertura")
+            option(value="") Seleccione una cobertura
+            each cobertura in coberturas
+                option(
+                    value=cobertura.nombre
+                    selected=(formData && formData.cobertura === cobertura.nombre)
+                )= cobertura.nombre
+
+        label(for="email") Email
+        input(
+            type="email"
+            name="email"
+            id="email"
+            placeholder="Ingrese el email"
+            value=(formData && formData.email ? formData.email : '')
+        )
+
+        label(for="telefono") Teléfono
+        input(
+            type="text"
+            name="telefono"
+            id="telefono"
+            placeholder="Ingrese el teléfono"
+            value=(formData && formData.telefono ? formData.telefono : '')
+        )
+
+        label(for="domicilio") Domicilio
+        input(
+            type="text"
+            name="domicilio"
+            id="domicilio"
+            placeholder="Ingrese el domicilio"
+            value=(formData && formData.domicilio ? formData.domicilio : '')
+        )
+
+        button(type="submit") Registrar paciente
+
+    if modalMessage
+        +Modal('modalGeneric', modalTitle, modalMessage, modalType)
