@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
   btnBuscarPaciente.addEventListener("click", () => {
     const dni = dniPaciente.value.trim();
     if (!dni) return alert("Ingrese un DNI");
-    window.location.href = `/pacientes/buscar?dni=${dni}`;
+    window.location.href = `/turnos/paciente?dni=${dni}`;
   });
 
   tipoTurno.addEventListener("change", async () => {

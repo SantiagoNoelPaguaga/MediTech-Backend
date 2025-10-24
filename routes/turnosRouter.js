@@ -15,6 +15,7 @@ router.delete("/delete/:id", turnoController.eliminarTurno);
 
 router.get("/buscar", turnoController.buscarPorIdForm);
 
+router.get("/paciente", turnoController.buscarPacientePorIdForm)
 
 // -------------------
 

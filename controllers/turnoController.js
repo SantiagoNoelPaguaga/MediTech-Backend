@@ -1,4 +1,5 @@
 import Turno from "../models/TurnoModel.js";
+import PacienteController from "../controllers/pacienteController.js"
 
 const validarCampos = (data) => {
  const requiredFields = [
@@ -264,6 +265,52 @@ const buscarPorIdForm = async (req, res) => {
  }
 };
 
+const buscarPacientePorIdForm = async (req, res) => {
+   try {
+    const { dni } = req.query;
+
+    if (!dni) {
+      return res.render("turno/nuevoTurno", {
+        modalMessage: "Debe ingresar un DNI",
+        modalType: "error",
+        modalTitle: "Error",
+        formData: {},
+      });
+    }
+
+    const paciente = await PacienteController.obtenerPorDni(dni);
+
+    if (!paciente) {
+      return res.render("turno/nuevoTurno", {
+        modalMessage: "No se encontró un paciente con DNI ${dni}",
+        modalType: "error",
+        modalTitle: "Paciente no encontrado",
+        formData: {},
+      });
+    }
+
+    res.render("turno/nuevoTurno", {
+      modalMessage: null,
+      modalType: null,
+      modalTitle: null,
+      formData: {
+        id: paciente._id,
+        nombre: paciente.nombre,
+        apellido: paciente.apellido,
+        dni: paciente.dni,
+      },
+    });
+  } catch (error) {
+    console.error("Error al buscar paciente para turno:", error);
+    res.render("turno/nuevoTurno", {
+      modalMessage: "Error interno al buscar paciente",
+      modalType: "error",
+      modalTitle: "Error",
+      formData: {},
+    });
+  }
+};
+
 export default {
  mostrarTurnos,
  formularioNuevoTurno,
@@ -272,4 +319,5 @@ export default {
  actualizarTurno,
  eliminarTurno,
  buscarPorIdForm,
+ buscarPacientePorIdForm
 };
