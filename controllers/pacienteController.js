@@ -187,50 +187,16 @@ const eliminarPaciente = async (req, res) => {
   }
 };
 
-const buscarPorDniForm = async (req, res) => {
-  try {
-    const { dni } = req.query;
-
-    if (!dni) {
-      return res.render("turno/nuevoTurno", {
-        modalMessage: "Debe ingresar un DNI",
-        modalType: "error",
-        modalTitle: "Error",
-        formData: {},
-      });
-    }
-
-    const paciente = await Paciente.obtenerPorDni(dni);
-
-    if (!paciente) {
-      return res.render("turno/nuevoTurno", {
-        modalMessage: `No se encontró un paciente con DNI ${dni}`,
-        modalType: "error",
-        modalTitle: "Paciente no encontrado",
-        formData: {},
-      });
-    }
-
-    res.render("turno/nuevoTurno", {
-      modalMessage: null,
-      modalType: null,
-      modalTitle: null,
-      formData: {
-        id: paciente._id,
-        nombre: paciente.nombre,
-        apellido: paciente.apellido,
-        dni: paciente.dni,
-      },
-    });
-  } catch (error) {
-    console.error("Error al buscar paciente para turno:", error);
-    res.render("turno/nuevoTurno", {
-      modalMessage: "Error interno al buscar paciente",
-      modalType: "error",
-      modalTitle: "Error",
-      formData: {},
-    });
+const obtenerPorDni = async (dni) => {
+  if (!dni || dni.trim() === "") {
+    throw new Error("DNI no proporcionado");
   }
+
+  const paciente = await Paciente.obtenerPorDni(dni);
+  if (!paciente) {
+    throw new Error(`No se encontró un paciente con DNI ${dni}`);
+  }
+  return paciente;
 };
 
 export default {
@@ -240,5 +206,5 @@ export default {
   formularioEditarPaciente,
   actualizarPaciente,
   eliminarPaciente,
-  buscarPorDniForm,
+  obtenerPorDni,
 };
