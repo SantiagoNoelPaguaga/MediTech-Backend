@@ -12,20 +12,32 @@ document.addEventListener("DOMContentLoaded", () => {
  if (dniPaciente.value) {
   dniPaciente.readOnly = true;
  }
- cargarTiposTurno();
+
+ async function inicializarFormulario() {
+  await cargarTiposTurno();
+
+  const tipoPreseleccionado = tipoTurno.dataset.preselected;
+  if (tipoPreseleccionado && tipoTurno.value) {
+   await manejarCambioTipoTurno(true);
+  }
+ }
+
+ inicializarFormulario();
+
  btnBuscarPaciente.addEventListener("click", () => {
   const dni = dniPaciente.value.trim();
   if (!dni) return alert("Ingrese un DNI");
   window.location.href = `/turnos/paciente?dni=${dni}`;
  });
- tipoTurno.addEventListener("change", manejarCambioTipoTurno);
+
+ tipoTurno.addEventListener("change", () => manejarCambioTipoTurno(false));
+
  async function cargarTiposTurno() {
   try {
    const res = await fetch("/turnos/api/tipo-turnos");
    if (!res.ok) throw new Error("Error al cargar tipos de turno");
 
    const tipos = await res.json();
-
    const valorPrecargado = tipoTurno.dataset.preselected;
 
    tipoTurno.innerHTML = `<option value="" selected disabled>Seleccione un tipo</option>`;
@@ -41,7 +53,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     tipoTurno.appendChild(opt);
    });
-
   } catch (error) {
    console.error("Error al cargar Tipos de Turno:", error);
   }
@@ -58,26 +69,32 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!res.ok) throw new Error("Error al cargar especialidades");
     const data = await res.json();
     opciones = data.map((e) => e.nombre);
-   }
-   else if (tipo === "estudio") {
+   } else if (tipo === "estudio") {
     opciones = ["Radiografía", "Electrocardiograma", "Análisis de Sangre"];
    }
-
   } catch (err) {
    console.error("Error al cargar opciones de descripción:", err);
    opciones = [];
   }
 
-  descripcionSelect.innerHTML = `<option value="" selected disabled>Seleccione una opción</option>`;
+  if (!isPreload || !valorDescripcionPrecargada) {
+   descripcionSelect.innerHTML = `<option value="" selected disabled>Seleccione una opción</option>`;
+  } else {
+   const firstOption = descripcionSelect.querySelector('option[selected]');
+   descripcionSelect.innerHTML = '';
+   if (firstOption) {
+    descripcionSelect.appendChild(firstOption);
+   }
+  }
+
   opciones.forEach((op) => {
+   if (isPreload && op === valorDescripcionPrecargada) {
+    return;
+   }
+
    const opt = document.createElement("option");
    opt.value = op;
    opt.textContent = op;
-
-   if (isPreload && op === valorDescripcionPrecargada) {
-    opt.selected = true;
-   }
-
    descripcionSelect.appendChild(opt);
   });
 
@@ -86,16 +103,16 @@ document.addEventListener("DOMContentLoaded", () => {
    descripcionSelect.hidden = false;
   }
 
-  if (isPreload && valorDescripcionPrecargada) {
-   await cargarMedicos(true);
+  if ((isPreload && valorDescripcionPrecargada) || !isPreload) {
+   await cargarMedicos(isPreload);
   }
  }
 
  descripcionSelect.addEventListener("change", async () => {
-  cargarMedicos();
+  await cargarMedicos(false);
  });
 
- async function cargarMedicos() {
+ async function cargarMedicos(isPreload = false) {
   try {
    const res = await fetch("/turnos/api/medicos");
 
@@ -104,17 +121,33 @@ document.addEventListener("DOMContentLoaded", () => {
    }
 
    const medicosData = await res.json();
-   
-   //IN CASE WE WANT TO FILTER medicos BY especialidad
+
+   // IN CASE WE WANT TO FILTER medicos BY especialidad
    // const especialidadSeleccionada = descripcionSelect.value;
-   // const medicos = medicosData.filter(m => 
+   // const medicos = medicosData.filter(m =>
    //    m.especialidades && m.especialidades.includes(especialidadSeleccionada)
    // );
 
    const medicos = medicosData;
 
-   medicoSelect.innerHTML = `<option value="" selected disabled>Seleccione un médico</option>`;
+   const medicoPreseleccionado = medicoSelect.querySelector('option[selected]');
+   const medicoIdPreseleccionado = medicoPreseleccionado ? medicoPreseleccionado.value : null;
+
+   if (!isPreload || !medicoIdPreseleccionado) {
+    medicoSelect.innerHTML = `<option value="" selected disabled>Seleccione un médico</option>`;
+   } else {
+    const firstOption = medicoSelect.querySelector('option[selected]');
+    medicoSelect.innerHTML = '';
+    if (firstOption) {
+     medicoSelect.appendChild(firstOption);
+    }
+   }
+
    medicos.forEach((m) => {
+    if (isPreload && m._id === medicoIdPreseleccionado) {
+     return;
+    }
+
     const opt = document.createElement("option");
     opt.value = m._id;
     opt.textContent = `${m.nombre} ${m.apellido}`;
@@ -132,6 +165,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
  medicoSelect.addEventListener("change", () => {
   const selected = medicoSelect.selectedOptions[0];
-  nombreMedicoHidden.value = selected.dataset.nombreCompleto;
+  if (selected && selected.dataset.nombreCompleto) {
+   nombreMedicoHidden.value = selected.dataset.nombreCompleto;
+  }
  });
 });

@@ -59,7 +59,11 @@ block content
 
         - const currentDescripcion = formData && formData.descripcion ? formData.descripcion : turno.descripcion
         label(for="descripcion") Descripción
-        select(name="descripcion" id="descripcion")
+        select(
+            name="descripcion" 
+            id="descripcion"
+            data-preselected=currentDescripcion
+        )
             if currentDescripcion
                 option(value=currentDescripcion selected)= currentDescripcion
             else
