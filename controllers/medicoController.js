@@ -203,6 +203,16 @@ const eliminarMedico = async (req, res) => {
   }
 };
 
+const obtenerMedicos = async () => {
+    try {
+        const medicos = await Medico.find({}); 
+        return medicos;
+    } catch (error) {
+        console.error("Error al obtener todos los médicos:", error);
+        throw new Error("Error al obtener la lista de médicos");
+    }
+};
+
 export default {
   mostrarMedicos,
   formularioNuevoMedico,
@@ -210,4 +220,5 @@ export default {
   formularioEditarMedico,
   actualizarMedico,
   eliminarMedico,
+  obtenerMedicos
 };

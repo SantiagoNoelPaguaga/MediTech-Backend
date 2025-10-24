@@ -29,6 +29,11 @@ medicoSchema.statics.listar = async function (
   return { medicos, totalPages };
 };
 
+medicoSchema.statics.obtenerMedicos = async function () {
+  const medicos = await Medico.find();
+  return medicos;
+};
+
 medicoSchema.statics.crearMedico = async function (data) {
   const medico = new this(data);
   return medico.save();
