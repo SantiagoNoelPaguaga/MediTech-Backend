@@ -1,0 +1,83 @@
+extends ../layout
+include ../mixin/title.pug
+include ../mixin/modal.pug
+
+block head
+    link(rel="stylesheet" href="/stylesheets/turno/forms-turno.css")
+
+block content
+    +SectionTitle('REGISTRAR TURNO')
+
+    form(id="formTurno" action="/turnos/new" method="POST")
+
+        label(for="dniPaciente") DNI del Paciente
+        .dni-busqueda
+            input(
+                type="text"
+                name="paciente[dni]"
+                id="dniPaciente"
+                placeholder="Ingrese el DNI"
+                required
+                value=(formData && formData.dni || '')
+            )
+            button(type="button" id="btnBuscarPaciente") Buscar
+
+        input(
+            type="hidden"
+            name="paciente[id]"
+            id="idPaciente"
+            value=(formData && formData.id || '')
+        )
+
+        label(for="nombrePaciente") Nombre del Paciente
+        input(
+            type="text"
+            name="paciente[nombre]"
+            id="nombrePaciente"
+            readonly
+            value=(formData && formData.nombre ? `${formData.nombre} ${formData.apellido}` : '')
+        )
+
+        label(for="fecha") Fecha del turno
+        input(
+            type="datetime-local"
+            name="fecha"
+            id="fecha"
+            required
+            value=(formData && formData.fecha || '')
+        )
+
+        label(for="tipoTurno") Tipo de Turno
+        select(name="tipoTurno" id="tipoTurno" required)
+            option(value="" selected disabled) Seleccione un tipo
+            option(value="consulta" selected=(formData && formData.tipoTurno === 'consulta')) Consulta General
+            option(value="estudio" selected=(formData && formData.tipoTurno === 'estudio')) Estudio Médico
+            option(value="control" selected=(formData && formData.tipoTurno === 'control')) Control
+
+        label(for="descripcion" hidden) Descripción
+        select(name="descripcion" id="descripcion" hidden)
+            option(value="" selected disabled) Seleccione una opción
+
+        label(for="medicoId" hidden=!(formData && formData.medico && formData.medico.id)) Médico
+        select(name="medico[id]" id="medicoId" hidden=!(formData && formData.medico && formData.medico.id))
+            if formData && formData.medico && formData.medico.id
+                option(value=formData.medico.id selected) #{formData.medico.nombre}
+            else
+                option(value="" selected disabled) Seleccione un médico
+
+        input(
+            type="hidden"
+            name="medico[nombre]"
+            id="nombreMedico"
+            value=(formData && formData.medico ? formData.medico.nombre : '')
+        )
+
+        input(type="hidden" name="estado" value=(formData && formData.estado || 'PENDIENTE'))
+
+        button(type="submit") Registrar Turno
+
+    if modalMessage
+        +Modal('modalGeneric', modalTitle, modalMessage, modalType)
+
+block scripts
+    script(src="/javascripts/turno/turno.js")
