@@ -48,11 +48,13 @@ block content
         )
 
         label(for="tipoTurno") Tipo de Turno
-        select(name="tipoTurno" id="tipoTurno" required)
+        select(
+            name="tipoTurno" 
+            id="tipoTurno" 
+            required
+            data-preselected=(formData && formData.tipoTurno || '') 
+        )
             option(value="" selected disabled) Seleccione un tipo
-            option(value="consulta" selected=(formData && formData.tipoTurno === 'consulta')) Consulta General
-            option(value="estudio" selected=(formData && formData.tipoTurno === 'estudio')) Estudio Médico
-            option(value="control" selected=(formData && formData.tipoTurno === 'control')) Control
 
         label(for="descripcion" hidden) Descripción
         select(name="descripcion" id="descripcion" hidden)

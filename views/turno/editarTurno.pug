@@ -49,11 +49,13 @@ block content
 
         - const currentTipoTurno = formData && formData.tipoTurno ? formData.tipoTurno : turno.tipoTurno
         label(for="tipoTurno") Tipo de Turno
-        select(name="tipoTurno" id="tipoTurno" required)
+        select(
+            name="tipoTurno" 
+            id="tipoTurno" 
+            required
+            data-preselected=currentTipoTurno
+        )
             option(value="" selected disabled) Seleccione un tipo
-            option(value="consulta" selected=(currentTipoTurno === 'consulta')) Consulta General
-            option(value="estudio" selected=(currentTipoTurno === 'estudio')) Estudio Médico
-            option(value="control" selected=(currentTipoTurno === 'control')) Control
 
         - const currentDescripcion = formData && formData.descripcion ? formData.descripcion : turno.descripcion
         label(for="descripcion") Descripción
