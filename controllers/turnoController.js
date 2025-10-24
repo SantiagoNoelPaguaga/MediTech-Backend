@@ -1,5 +1,9 @@
 import Turno from "../models/TurnoModel.js";
 import PacienteController from "../controllers/pacienteController.js"
+import MedicoController from "../controllers/medicoController.js";
+import EspecialidadController from "../controllers/especialidadController.js";
+import TipoTurnoController from "../controllers/tipoTurnoController.js";
+import EstudioMedicoController from "../controllers/estudioMedicoController.js";
 
 const validarCampos = (data) => {
  const requiredFields = [
@@ -62,9 +66,10 @@ const mostrarTurnos = async (req, res) => {
 
 const formularioNuevoTurno = async (req, res) => {
  try {
-
+  const medicos = await MedicoController.obtenerMedicos();
   res.render("turno/nuevoTurno", {
    formData: {},
+   medicos,
    modalMessage: null,
    modalType: null,
    modalTitle: null,
@@ -74,7 +79,8 @@ const formularioNuevoTurno = async (req, res) => {
 
   res.render("turno/nuevoTurno", {
    formData: {},
-   modalMessage: "Error al cargar las coberturas",
+   medicos: [],
+   modalMessage: "Error al cargar el formulario",
    modalType: "error",
    modalTitle: "Error",
   });
@@ -311,6 +317,62 @@ const buscarPacientePorIdForm = async (req, res) => {
   }
 };
 
+const obtenerMedicosAPI = async (req, res) => {
+    try {
+        const medicos = await MedicoController.obtenerMedicos();
+        res.json(medicos); 
+    } catch (error) {
+        console.error("Error al obtener médicos para API:", error);
+        res.status(500).json({ 
+            modalMessage: "Error al obtener médicos",
+            modalType: "error",
+            modalTitle: "Error interno"
+        });
+    }
+};
+
+const obtenerEspecialidadesAPI = async (req, res) => {
+    try {
+        const especialidades = await EspecialidadController.obtenerEspecialidades();
+        res.json(especialidades); 
+    } catch (error) {
+        console.error("Error al obtener especialidades para API:", error);
+        res.status(500).json({ 
+            modalMessage: "Error al obtener especialidades",
+            modalType: "error",
+            modalTitle: "Error interno"
+        });
+    }
+};
+
+const obtenerTipoTurnosAPI = async (req, res) => {
+ try {
+     const tipoTurnos = await TipoTurnoController.obtenerTipoTurnos();
+     res.json(tipoTurnos); 
+ } catch (error) {
+     console.error("Error al obtener tipo turnos para API:", error);
+     res.status(500).json({ 
+         modalMessage: "Error al obtener tipo turnos",
+         modalType: "error",
+         modalTitle: "Error interno"
+     });
+ }
+}
+
+const obtenerEstudioMedicosAPI = async (req, res) => {
+ try {
+     const tipoTurnos = await EstudioMedicoController.obtenerEstudiosMedicos();
+     res.json(tipoTurnos); 
+ } catch (error) {
+     console.error("Error al obtener estudios medicos para API:", error);
+     res.status(500).json({ 
+         modalMessage: "Error al obtener estudios medicos",
+         modalType: "error",
+         modalTitle: "Error interno"
+     });
+ }
+}
+
 export default {
  mostrarTurnos,
  formularioNuevoTurno,
@@ -319,5 +381,9 @@ export default {
  actualizarTurno,
  eliminarTurno,
  buscarPorIdForm,
- buscarPacientePorIdForm
+ buscarPacientePorIdForm,
+ obtenerMedicosAPI,
+ obtenerEspecialidadesAPI,
+ obtenerTipoTurnosAPI,
+ obtenerEstudioMedicosAPI
 };
