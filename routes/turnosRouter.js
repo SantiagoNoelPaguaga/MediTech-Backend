@@ -17,6 +17,15 @@ router.get("/buscar", turnoController.buscarPorIdForm);
 
 router.get("/paciente", turnoController.buscarPacientePorIdForm)
 
+router.get("/api/medicos", turnoController.obtenerMedicosAPI);
+
+router.get("/api/especialidades", turnoController.obtenerEspecialidadesAPI)
+
+router.get("/api/tipo-turnos", turnoController.obtenerTipoTurnosAPI)
+
+router.get("/api/estudios-medicos", turnoController.obtenerEstudioMedicosAPI)
+
+
 // -------------------
 
 router.get("/new", (req, res) => {
