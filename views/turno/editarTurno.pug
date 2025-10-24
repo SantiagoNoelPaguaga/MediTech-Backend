@@ -1,0 +1,99 @@
+extends ../layout
+include ../mixin/title.pug
+include ../mixin/modal.pug
+
+block head
+    link(rel="stylesheet" href="/stylesheets/turno/forms-turno.css")
+
+block content
+    +SectionTitle('EDITAR TURNO')
+
+    form(id="formTurno" action=`/turnos/edit/${turno._id}` method="POST")
+        input(type="hidden" name="_method" value="PUT")
+        
+        label(for="dniPaciente") DNI del Paciente
+        .dni-busqueda
+            input(
+                type="text"
+                name="paciente[dni]"
+                id="dniPaciente"
+                placeholder="Ingrese el DNI"
+                required
+                value=(formData && formData.paciente && formData.paciente.dni || turno.dniPaciente || '')
+            )
+            button(type="button" id="btnBuscarPaciente") Buscar
+
+        input(
+            type="hidden"
+            name="paciente[id]"
+            id="idPaciente"
+            value=(formData && formData.paciente && formData.paciente.id || turno.pacienteId || '')
+        )
+
+        label(for="nombrePaciente") Nombre del Paciente
+        input(
+            type="text"
+            name="paciente[nombre]"
+            id="nombrePaciente"
+            readonly
+            value=(formData && formData.paciente && formData.paciente.nombre || turno.nombrePaciente || '')
+        )
+
+        input(
+            type="datetime-local"
+            name="fecha"
+            id="fecha"
+            required
+            value=(formData && formData.fecha || turno.fechaFormatted || '')
+        )
+
+        - const currentTipoTurno = formData && formData.tipoTurno ? formData.tipoTurno : turno.tipoTurno
+        label(for="tipoTurno") Tipo de Turno
+        select(
+            name="tipoTurno" 
+            id="tipoTurno" 
+            required
+            data-preselected=currentTipoTurno
+        )
+            option(value="" selected disabled) Seleccione un tipo
+
+        - const currentDescripcion = formData && formData.descripcion ? formData.descripcion : turno.descripcion
+        label(for="descripcion") Descripción
+        select(name="descripcion" id="descripcion")
+            if currentDescripcion
+                option(value=currentDescripcion selected)= currentDescripcion
+            else
+                option(value="" selected disabled) Seleccione una opción
+
+        - const currentMedicoId = formData && formData.medico && formData.medico.id ? formData.medico.id : turno.medicoId
+        - const currentNombreMedico = formData && formData.medico && formData.medico.nombre ? formData.medico.nombre : turno.nombreMedico
+        
+        label(for="medicoId") Médico
+        select(name="medico[id]" id="medicoId")
+            if currentMedicoId && currentNombreMedico
+                option(value=currentMedicoId selected) #{currentNombreMedico}
+            else
+                option(value="" selected disabled) Seleccione un médico
+
+        input(
+            type="hidden"
+            name="medico[nombre]"
+            id="nombreMedico"
+            value=currentNombreMedico || ''
+        )
+
+        - const currentEstado = formData && formData.estado ? formData.estado : turno.estado
+        label(for="estado") Estado
+        select(name="estado" id="estado" required)
+            option(value="PENDIENTE" selected=(currentEstado === 'PENDIENTE')) PENDIENTE
+            option(value="CONFIRMADO" selected=(currentEstado === 'CONFIRMADO')) CONFIRMADO
+            option(value="CANCELADO" selected=(currentEstado === 'CANCELADO')) CANCELADO
+            option(value="COMPLETADO" selected=(currentEstado === 'COMPLETADO')) COMPLETADO
+
+        button(type="submit") Guardar Cambios
+
+    if modalMessage
+        +Modal('modalGeneric', modalTitle, modalMessage, modalType)
+
+block scripts
+    script(src="/javascripts/turno/turno.js")
