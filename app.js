@@ -5,6 +5,8 @@ import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
 import methodOverride from "method-override";
+import empleadosRouter from "./routes/empleadosRouter.js";
+import tareasRouter from "./routes/tareasRouter.js";
 import pacientesRouter from "./routes/pacientesRouter.js";
 import medicosRouter from "./routes/medicosRouter.js";
 import turnosRouter from "./routes/turnosRouter.js";
@@ -42,6 +44,8 @@ app.get("/", (req, res) => {
   res.render("index");
 });
 
+app.use("/tareas", tareasRouter);
+app.use("/empleados", empleadosRouter);
 app.use("/pacientes", pacientesRouter);
 app.use("/medicos", medicosRouter);
 app.use("/turnos", turnosRouter);
