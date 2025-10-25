@@ -189,14 +189,11 @@ const eliminarPaciente = async (req, res) => {
 
 const obtenerPorDni = async (dni) => {
   if (!dni || dni.trim() === "") {
-    throw new Error("DNI no proporcionado");
+    return null;
   }
 
   const paciente = await Paciente.obtenerPorDni(dni);
-  if (!paciente) {
-    throw new Error(`No se encontró un paciente con DNI ${dni}`);
-  }
-  return paciente;
+  return paciente || null;
 };
 
 export default {
