@@ -1,5 +1,6 @@
 import Medico from "../models/MedicoModel.js";
 import EspecialidadController from "./especialidadController.js";
+import EmpleadoController from "./empleadoController.js";
 
 const validarCampos = (data) => {
   const requiredFields = [
@@ -69,10 +70,9 @@ const formularioNuevoMedico = async (req, res) => {
 
 const guardarMedico = async (req, res) => {
   const data = req.body;
+  const especialidadesSeleccionadas = data.especialidades || [];
   const especialidadesDisponibles =
     await EspecialidadController.obtenerEspecialidades();
-
-  const especialidadesSeleccionadas = data.especialidades || [];
 
   const errorValidacion = validarCampos({
     ...data,
@@ -90,10 +90,38 @@ const guardarMedico = async (req, res) => {
   }
 
   try {
+    const resultadoEmpleado = await EmpleadoController.crearEmpleadoInterno({
+      nombre: data.nombre,
+      apellido: data.apellido,
+      dni: data.dni,
+    });
+
+    if (!resultadoEmpleado.ok) {
+      return res.render("medico/nuevoMedico", {
+        modalMessage: resultadoEmpleado.message,
+        modalType: "error",
+        modalTitle: "Error",
+        formData: { ...data, especialidades: especialidadesSeleccionadas },
+        especialidades: especialidadesDisponibles,
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.render("medico/nuevoMedico", {
+      modalMessage: "Error al crear empleado: " + error.message,
+      modalType: "error",
+      modalTitle: "Error",
+      formData: { ...data, especialidades: especialidadesSeleccionadas },
+      especialidades: especialidadesDisponibles,
+    });
+  }
+
+  try {
     await Medico.crearMedico({
       ...data,
       especialidades: especialidadesSeleccionadas,
     });
+
     res.redirect("/medicos");
   } catch (error) {
     console.error(error);
@@ -132,9 +160,6 @@ const formularioEditarMedico = async (req, res) => {
 
 const actualizarMedico = async (req, res) => {
   const data = req.body;
-  const especialidadesDisponibles =
-    await EspecialidadController.obtenerEspecialidades();
-
   const especialidadesSeleccionadas = data.especialidades || [];
 
   const errorValidacion = validarCampos({
@@ -152,11 +177,17 @@ const actualizarMedico = async (req, res) => {
         ...data,
         especialidades: especialidadesSeleccionadas,
       },
-      especialidades: especialidadesDisponibles,
+      especialidades: await EspecialidadController.obtenerEspecialidades(),
     });
   }
 
   try {
+    await EmpleadoController.actualizarEmpleadoInterno(req.params.id, {
+      nombre: data.nombre,
+      apellido: data.apellido,
+      dni: data.dni,
+    });
+
     await Medico.actualizarMedico(req.params.id, {
       ...data,
       especialidades: especialidadesSeleccionadas,
@@ -177,13 +208,14 @@ const actualizarMedico = async (req, res) => {
         ...data,
         especialidades: especialidadesSeleccionadas,
       },
-      especialidades: especialidadesDisponibles,
+      especialidades: await EspecialidadController.obtenerEspecialidades(),
     });
   }
 };
 
 const eliminarMedico = async (req, res) => {
   try {
+    await EmpleadoController.eliminarEmpleadoInterno(req.params.id);
     await Medico.eliminarMedico(req.params.id);
     res.redirect("/medicos");
   } catch (error) {
@@ -203,6 +235,12 @@ const eliminarMedico = async (req, res) => {
   }
 };
 
+const obtenerMedicoPorId = async (id) => {
+  const medico = await Medico.obtenerPorId(id);
+  if (!medico) throw new Error("Médico no encontrado");
+  return medico;
+};
+
 const obtenerMedicos = async () => {
     try {
         const medicos = await Medico.find({}); 
@@ -220,5 +258,6 @@ export default {
   formularioEditarMedico,
   actualizarMedico,
   eliminarMedico,
+  obtenerMedicoPorId,
   obtenerMedicos
 };
