@@ -21,13 +21,13 @@ const empleadoSchema = new mongoose.Schema(
     rol: { type: String, required: true, enum: ROLES },
     area: { type: String, required: true, enum: AREAS },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 empleadoSchema.statics.listar = async function (
   page = 1,
   perPage = 12,
-  dni = ""
+  dni = "",
 ) {
   const filter = dni ? { dni: { $regex: dni, $options: "i" } } : {};
   const total = await this.countDocuments(filter);

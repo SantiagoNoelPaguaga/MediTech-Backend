@@ -113,64 +113,71 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   async function cargarMedicos(isPreload = false) {
-  try {
-    const res = await fetch("/turnos/api/medicos");
-    if (!res.ok) {
-      throw new Error(`HTTP error! status: ${res.status}`);
-    }
-    const medicosData = await res.json();
-    
-    let medicos;
-    const tipoTurnoValue = tipoTurno.value;
-    const descripcionValue = descripcionSelect.value;
-    
-    if ((tipoTurnoValue === "consulta" || tipoTurnoValue === "control") && descripcionValue) {
-      medicos = medicosData.filter(m => 
-        m.especialidades && m.especialidades.includes(descripcionValue)
-      );
-    } else {
-      medicos = medicosData;
-    }
-    
-    const medicoPreseleccionado = medicoSelect.querySelector("option[selected]");
-    const medicoIdPreseleccionado = medicoPreseleccionado ? medicoPreseleccionado.value : null;
-    
-    if (!isPreload || !medicoIdPreseleccionado) {
-      medicoSelect.innerHTML = `<option value="" selected disabled>Seleccione un médico</option>`;
-    } else {
-      const firstOption = medicoSelect.querySelector("option[selected]");
-      medicoSelect.innerHTML = "";
-      if (firstOption) {
-        medicoSelect.appendChild(firstOption);
+    try {
+      const res = await fetch("/turnos/api/medicos");
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
       }
-    }
-    
-    medicos.forEach((m) => {
-      if (isPreload && m._id === medicoIdPreseleccionado) {
-        return;
+      const medicosData = await res.json();
+
+      let medicos;
+      const tipoTurnoValue = tipoTurno.value;
+      const descripcionValue = descripcionSelect.value;
+
+      if (
+        (tipoTurnoValue === "consulta" || tipoTurnoValue === "control") &&
+        descripcionValue
+      ) {
+        medicos = medicosData.filter(
+          (m) =>
+            m.especialidades && m.especialidades.includes(descripcionValue),
+        );
+      } else {
+        medicos = medicosData;
       }
-      const opt = document.createElement("option");
-      opt.value = m._id;
-      opt.textContent = `${m.nombre} ${m.apellido}`;
-      opt.dataset.nombreCompleto = `${m.nombre} ${m.apellido}`;
-      medicoSelect.appendChild(opt);
-    });
-    
-    if (medicos.length === 0 && !isPreload) {
-      const opt = document.createElement("option");
-      opt.value = "";
-      opt.textContent = "No hay médicos disponibles para esta especialidad";
-      opt.disabled = true;
-      medicoSelect.appendChild(opt);
+
+      const medicoPreseleccionado =
+        medicoSelect.querySelector("option[selected]");
+      const medicoIdPreseleccionado = medicoPreseleccionado
+        ? medicoPreseleccionado.value
+        : null;
+
+      if (!isPreload || !medicoIdPreseleccionado) {
+        medicoSelect.innerHTML = `<option value="" selected disabled>Seleccione un médico</option>`;
+      } else {
+        const firstOption = medicoSelect.querySelector("option[selected]");
+        medicoSelect.innerHTML = "";
+        if (firstOption) {
+          medicoSelect.appendChild(firstOption);
+        }
+      }
+
+      medicos.forEach((m) => {
+        if (isPreload && m._id === medicoIdPreseleccionado) {
+          return;
+        }
+        const opt = document.createElement("option");
+        opt.value = m._id;
+        opt.textContent = `${m.nombre} ${m.apellido}`;
+        opt.dataset.nombreCompleto = `${m.nombre} ${m.apellido}`;
+        medicoSelect.appendChild(opt);
+      });
+
+      if (medicos.length === 0 && !isPreload) {
+        const opt = document.createElement("option");
+        opt.value = "";
+        opt.textContent = "No hay médicos disponibles para esta especialidad";
+        opt.disabled = true;
+        medicoSelect.appendChild(opt);
+      }
+
+      medicoLabel.hidden = false;
+      medicoSelect.hidden = false;
+    } catch (err) {
+      console.error(err);
+      alert("Error al cargar médicos.");
     }
-    
-    medicoLabel.hidden = false;
-    medicoSelect.hidden = false;
-  } catch (err) {
-    console.error(err);
-    alert("Error al cargar médicos.");
   }
-}
 
   medicoSelect.addEventListener("change", () => {
     const selected = medicoSelect.selectedOptions[0];

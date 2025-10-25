@@ -12,11 +12,11 @@ const validarCampos = (data) => {
     "domicilio",
   ];
   const missingFields = requiredFields.filter(
-    (field) => !data[field] || data[field].trim() === ""
+    (field) => !data[field] || data[field].trim() === "",
   );
   if (missingFields.length > 0) {
     return `Los siguientes campos son obligatorios: ${missingFields.join(
-      ", "
+      ", ",
     )}`;
   }
   return null;

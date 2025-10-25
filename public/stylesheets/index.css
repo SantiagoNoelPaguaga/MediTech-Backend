@@ -42,7 +42,10 @@ section#modulos {
   box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
   text-align: center;
   overflow: hidden;
-  transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
+  transition:
+    transform 0.3s,
+    box-shadow 0.3s,
+    background 0.3s;
   padding: 2rem 1.5rem;
 }
 
@@ -70,7 +73,9 @@ section#modulos {
   border: none;
   border-radius: 0.5rem;
   cursor: pointer;
-  transition: background 0.3s, transform 0.2s;
+  transition:
+    background 0.3s,
+    transform 0.2s;
 }
 
 .card button:hover {

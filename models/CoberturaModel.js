@@ -4,7 +4,7 @@ const coberturaSchema = new mongoose.Schema(
   {
     nombre: { type: String, required: true, unique: true },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 coberturaSchema.statics.obtenerTodas = async function () {

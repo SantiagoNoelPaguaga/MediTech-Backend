@@ -16,12 +16,12 @@ const validarCampos = (data) => {
 
   const missingFields = requiredFields.filter(
     (field) =>
-      !data[field] || (Array.isArray(data[field]) && data[field].length === 0)
+      !data[field] || (Array.isArray(data[field]) && data[field].length === 0),
   );
 
   if (missingFields.length > 0) {
     return `Los siguientes campos son obligatorios: ${missingFields.join(
-      ", "
+      ", ",
     )}`;
   }
   return null;
@@ -242,13 +242,13 @@ const obtenerMedicoPorId = async (id) => {
 };
 
 const obtenerMedicos = async () => {
-    try {
-        const medicos = await Medico.find({}); 
-        return medicos;
-    } catch (error) {
-        console.error("Error al obtener todos los médicos:", error);
-        throw new Error("Error al obtener la lista de médicos");
-    }
+  try {
+    const medicos = await Medico.find({});
+    return medicos;
+  } catch (error) {
+    console.error("Error al obtener todos los médicos:", error);
+    throw new Error("Error al obtener la lista de médicos");
+  }
 };
 
 export default {
@@ -259,5 +259,5 @@ export default {
   actualizarMedico,
   eliminarMedico,
   obtenerMedicoPorId,
-  obtenerMedicos
+  obtenerMedicos,
 };

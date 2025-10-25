@@ -11,13 +11,13 @@ const medicoSchema = new mongoose.Schema(
     domicilio: String,
     especialidades: [String],
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 medicoSchema.statics.listar = async function (
   page = 1,
   perPage = 12,
-  dni = ""
+  dni = "",
 ) {
   const filter = dni ? { dni: { $regex: dni, $options: "i" } } : {};
   const total = await this.countDocuments(filter);

@@ -34,7 +34,7 @@ app.use(
       delete req.body._method;
       return method;
     }
-  })
+  }),
 );
 
 app.set("view engine", "pug");

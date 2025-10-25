@@ -4,11 +4,11 @@ import MedicoController from "./medicoController.js";
 const validarCampos = (data) => {
   const requiredFields = ["nombre", "apellido", "dni", "rol", "area"];
   const missingFields = requiredFields.filter(
-    (field) => !data[field] || data[field].trim() === ""
+    (field) => !data[field] || data[field].trim() === "",
   );
   if (missingFields.length > 0) {
     return `Los siguientes campos son obligatorios: ${missingFields.join(
-      ", "
+      ", ",
     )}`;
   }
   return null;
@@ -50,10 +50,10 @@ const mostrarEmpleados = async (req, res) => {
 const formularioNuevoEmpleado = async (req, res) => {
   try {
     const roles = Empleado.obtenerRoles().filter(
-      (rol) => !rolesExcluidos.includes(rol)
+      (rol) => !rolesExcluidos.includes(rol),
     );
     const areas = Empleado.obtenerAreas().filter(
-      (area) => !areasExcluidas.includes(area)
+      (area) => !areasExcluidas.includes(area),
     );
 
     res.render("empleado/nuevoEmpleado", {
@@ -89,7 +89,7 @@ const guardarEmpleado = async (req, res) => {
     return renderErrorNuevo(
       res,
       data,
-      "No está permitido registrar empleados con rol de Médico desde este formulario."
+      "No está permitido registrar empleados con rol de Médico desde este formulario.",
     );
   }
 
@@ -106,10 +106,10 @@ const guardarEmpleado = async (req, res) => {
 
 const renderErrorNuevo = (res, data, message) => {
   const roles = Empleado.obtenerRoles().filter(
-    (rol) => !rolesExcluidos.includes(rol)
+    (rol) => !rolesExcluidos.includes(rol),
   );
   const areas = Empleado.obtenerAreas().filter(
-    (area) => !areasExcluidas.includes(area)
+    (area) => !areasExcluidas.includes(area),
   );
   res.render("empleado/nuevoEmpleado", {
     modalMessage: message,
@@ -127,10 +127,10 @@ const formularioEditarEmpleado = async (req, res) => {
     if (!empleado) return res.redirect("/empleados");
 
     const roles = Empleado.obtenerRoles().filter(
-      (rol) => !rolesExcluidos.includes(rol)
+      (rol) => !rolesExcluidos.includes(rol),
     );
     const areas = Empleado.obtenerAreas().filter(
-      (area) => !areasExcluidas.includes(area)
+      (area) => !areasExcluidas.includes(area),
     );
 
     res.render("empleado/editarEmpleado", {
@@ -175,10 +175,10 @@ const actualizarEmpleado = async (req, res) => {
 
 const renderErrorEditar = (res, id, data, message) => {
   const roles = Empleado.obtenerRoles().filter(
-    (rol) => !rolesExcluidos.includes(rol)
+    (rol) => !rolesExcluidos.includes(rol),
   );
   const areas = Empleado.obtenerAreas().filter(
-    (area) => !areasExcluidas.includes(area)
+    (area) => !areasExcluidas.includes(area),
   );
 
   res.render("empleado/editarEmpleado", {

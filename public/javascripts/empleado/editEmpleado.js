@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const proveedorDiv = document.getElementById("proveedorDiv");
   const nombreEmpleadoHidden = document.getElementById("nombreEmpleadoHidden");
   const apellidoEmpleadoHidden = document.getElementById(
-    "apellidoEmpleadoHidden"
+    "apellidoEmpleadoHidden",
   );
   const rolEmpleadoHidden = document.getElementById("rolEmpleadoHidden");
   const nombrePacienteHidden = document.getElementById("nombrePacienteHidden");
@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function aplicarReglas(area) {
     if (
       ["Administración de Turnos", "Atención Médica", "Facturación"].includes(
-        area
+        area,
       )
     ) {
       dniPacienteDiv.style.display = "block";

@@ -27,7 +27,9 @@ form textarea {
   font-size: 1rem;
   width: 100%;
   box-sizing: border-box;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 form input:focus,
@@ -47,7 +49,9 @@ form button[type="submit"] {
   cursor: pointer;
   font-size: 1rem;
   font-weight: bold;
-  transition: background 0.2s, transform 0.15s;
+  transition:
+    background 0.2s,
+    transform 0.15s;
   margin: 1rem auto 0 auto;
   display: block;
 }
@@ -86,7 +90,9 @@ button#btnBuscarPaciente {
   padding: 0.5rem 1rem;
   cursor: pointer;
   font-weight: bold;
-  transition: background 0.2s, transform 0.15s;
+  transition:
+    background 0.2s,
+    transform 0.15s;
 }
 
 button#btnBuscarEmpleado:hover,

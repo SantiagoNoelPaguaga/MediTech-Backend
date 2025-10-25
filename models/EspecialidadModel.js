@@ -4,7 +4,7 @@ const especialidadSchema = new mongoose.Schema(
   {
     nombre: { type: String, required: true, unique: true },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 especialidadSchema.statics.obtenerTodas = async function () {

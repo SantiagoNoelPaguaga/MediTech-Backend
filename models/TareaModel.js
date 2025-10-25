@@ -51,13 +51,13 @@ const tareaSchema = new mongoose.Schema(
     fechaInicio: { type: Date, required: true },
     fechaFin: { type: Date, required: true },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 tareaSchema.statics.listar = async function (
   page = 1,
   perPage = 10,
-  filtros = {}
+  filtros = {},
 ) {
   const filter = {};
 

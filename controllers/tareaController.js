@@ -108,13 +108,13 @@ const validarCampos = (data) => {
   };
 
   const missing = required.filter(
-    (f) => !data[f] || String(data[f]).trim() === ""
+    (f) => !data[f] || String(data[f]).trim() === "",
   );
 
   if (missing.length > 0) {
     const nombresLegibles = missing.map((f) => etiquetas[f] || f);
     return `Los siguientes campos son obligatorios: ${nombresLegibles.join(
-      ", "
+      ", ",
     )}.`;
   }
 

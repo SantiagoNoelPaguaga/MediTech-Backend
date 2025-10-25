@@ -32,7 +32,9 @@ form textarea {
   border: 1px solid #ccc;
   border-radius: 0.5rem;
   font-size: 1rem;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 form input:focus,
@@ -53,7 +55,9 @@ form button[type="submit"],
   font-weight: bold;
   font-size: 1rem;
   cursor: pointer;
-  transition: background 0.2s, transform 0.15s;
+  transition:
+    background 0.2s,
+    transform 0.15s;
 }
 
 form button[type="submit"]:hover,
