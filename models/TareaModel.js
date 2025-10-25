@@ -1,171 +1,140 @@
-import { readFile, writeFile } from 'fs/promises';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import mongoose from "mongoose";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const tareaSchema = new mongoose.Schema(
+  {
+    titulo: { type: String, required: true },
+    descripcion: { type: String },
 
-const fileTareas = path.join(__dirname, '../data/tareas.json');
-const fileEmpleados = path.join(__dirname, '../data/empleados.json');
-const filePacientes = path.join(__dirname, '../data/pacientes.json');
-const fileAreas = path.join(__dirname, '../data/areas.json');
-const fileTareasTitulos = path.join(__dirname, '../data/tareasTitulos.json');
+    estado: {
+      type: String,
+      enum: ["PENDIENTE", "EN CURSO", "COMPLETADA", "CANCELADA"],
+      default: "PENDIENTE",
+      required: true,
+    },
 
-async function leerJSON(ruta) {
-  try {
-    const data = await readFile(ruta, 'utf-8');
-    return JSON.parse(data);
-  } catch {
-    return [];
-  }
-}
+    prioridad: {
+      type: String,
+      enum: ["BAJA", "MEDIA", "ALTA"],
+      default: "MEDIA",
+      required: true,
+    },
 
-async function guardarJSON(ruta, datos) {
-  await writeFile(ruta, JSON.stringify(datos, null, 2));
-}
+    area: { type: String, required: true },
 
-// GET
-async function listarTareas() {
-  return await leerJSON(fileTareas);
-}
+    empleado: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Empleado",
+      required: true,
+    },
 
-// POST
-async function crearTarea(datos) {
-  const areasValidas = await leerJSON(fileAreas);
-  const tareasTitulos = await leerJSON(fileTareasTitulos);
-  const empleados = await leerJSON(fileEmpleados);
-  const pacientes = await leerJSON(filePacientes);
+    paciente: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Paciente",
+      required: false,
+    },
 
-  if (!areasValidas.includes(datos.area)) {
-    throw new Error(`Área inválida. Valores permitidos: ${areasValidas.join(', ')}`);
-  }
+    proveedor: {
+      type: String,
+      enum: [
+        "Distribuidora Médica Sur",
+        "Farmalab",
+        "ProveSalud",
+        "BioTech",
+        "Medimport",
+        "Otro",
+      ],
+      required: false,
+    },
 
-  const titulosValidos = Object.values(tareasTitulos).flat();
-  if (!titulosValidos.includes(datos.titulo)) {
-    throw new Error(`Tarea inválida. Valores permitidos: ${titulosValidos.join(', ')}`);
-  }
+    observaciones: { type: String, required: false },
 
-  if (
-    !empleados.some(
-      e => e.dni === datos.empleado
-    )
-  ) {
-    throw new Error('Empleado asignado no existe.');
-  }
+    fechaInicio: { type: Date, required: true },
+    fechaFin: { type: Date, required: true },
+  },
+  { timestamps: true }
+);
 
-  if (
-    datos.paciente &&
-    !pacientes.some(p => p.dni === datos.paciente)
-  ) {
-    throw new Error('Paciente asignado no existe.');
-  }
+tareaSchema.statics.listar = async function (
+  page = 1,
+  perPage = 10,
+  filtros = {}
+) {
+  const filter = {};
 
-  const tareas = await listarTareas();
-  const nuevaTarea = {
-    id: tareas.length ? tareas[tareas.length - 1].id + 1 : 1,
-    ...datos
-  };
+  if (filtros.estado) filter.estado = filtros.estado;
+  if (filtros.prioridad) filter.prioridad = filtros.prioridad;
+  if (filtros.area) filter.area = filtros.area;
+  if (filtros.empleado) filter.empleado = filtros.empleado;
+  if (filtros.paciente) filter.paciente = filtros.paciente;
+  if (filtros.proveedor) filter.proveedor = filtros.proveedor;
 
-  tareas.push(nuevaTarea);
-  await guardarJSON(fileTareas, tareas);
-  return nuevaTarea;
-}
+  const total = await this.countDocuments(filter);
+  const totalPages = Math.ceil(total / perPage);
 
-// PUT
-async function actualizarTarea(id, datos) {
-  const tareas = await listarTareas();
-  const index = tareas.findIndex(t => t.id === Number(id));
-  if (index === -1) throw new Error('Tarea no encontrada');
+  const tareas = await this.find(filter)
+    .populate("empleado", "nombre apellido dni rol area")
+    .populate("paciente", "nombre apellido dni")
+    .skip((page - 1) * perPage)
+    .limit(perPage)
+    .lean();
 
-  const areasValidas = await leerJSON(fileAreas);
-  const tareasTitulos = await leerJSON(fileTareasTitulos);
-  const empleados = await leerJSON(fileEmpleados);
-  const pacientes = await leerJSON(filePacientes);
-
-  if (datos.area && !areasValidas.includes(datos.area)) {
-    throw new Error(`Área inválida. Valores permitidos: ${areasValidas.join(', ')}`);
-  }
-
-  if (datos.titulo) {
-    const titulosValidos = Object.values(tareasTitulos).flat();
-    if (!titulosValidos.includes(datos.titulo)) {
-      throw new Error(`Tarea inválida. Valores permitidos: ${titulosValidos.join(', ')}`);
-    }
-  }
-
-  if (
-    datos.empleado &&
-    !empleados.some(
-      e => e.dni === datos.empleado
-    )
-  ) {
-    throw new Error('Empleado asignado no existe.');
-  }
-
-  if (
-    datos.paciente &&
-    !pacientes.some(p => p.dni === datos.paciente)
-  ) {
-    throw new Error('Paciente asignado no existe.');
-  }
-
-  tareas[index] = { ...tareas[index], ...datos };
-  await guardarJSON(fileTareas, tareas);
-  return tareas[index];
-}
-
-// DELETE
-async function eliminarTarea(id) {
-  const tareas = await listarTareas();
-  const index = tareas.findIndex(t => t.id === Number(id));
-
-  if (index === -1) {
-    throw new Error('Tarea no encontrada');
-  }
-
-  tareas.splice(index, 1);
-  await guardarJSON(fileTareas, tareas);
-  return { mensaje: 'Tarea eliminada' };
-}
-
-// FILTRAR
-async function filtrarTareas(filtros) {
-  const tareas = await listarTareas();
-
-  const resultado = tareas.filter(t => {
-    let cumple = true;
-
-    if (filtros.estado) {
-      cumple = cumple && t.estado?.trim().toLowerCase() === filtros.estado.trim().toLowerCase();
-    }
-    if (filtros.prioridad) {
-      cumple = cumple && t.prioridad?.trim().toLowerCase() === filtros.prioridad.trim().toLowerCase();
-    }
-    if (filtros.empleado) {
-      cumple = cumple && t.empleado?.trim() === filtros.empleado.trim();
-    }
-    if (filtros.paciente) {
-      cumple = cumple && t.paciente?.trim() === filtros.paciente.trim();
-    }
-    if (filtros.fechaInicio && t.fechaInicio) {
-      cumple = cumple && new Date(t.fechaInicio) >= new Date(filtros.fechaInicio);
-    }
-    if (filtros.fechaFin && t.fechaFin) {
-      cumple = cumple && new Date(t.fechaFin) <= new Date(filtros.fechaFin);
-    }
-
-    return cumple;
-  });
-
-  return resultado; 
-}
-
-const TareaModel = {
-  listarTareas,
-  crearTarea,
-  actualizarTarea,
-  eliminarTarea,
-  filtrarTareas
+  return { tareas, totalPages };
 };
 
-export default TareaModel;
+tareaSchema.statics.crearTarea = async function (data) {
+  const tarea = new this(data);
+  return tarea.save();
+};
+
+tareaSchema.statics.obtenerPorId = async function (id) {
+  return this.findById(id)
+    .populate("empleado", "nombre apellido dni rol area")
+    .populate("paciente", "nombre apellido dni")
+    .lean();
+};
+
+tareaSchema.statics.actualizarTarea = async function (id, data) {
+  return this.findByIdAndUpdate(id, data, { new: true })
+    .populate("empleado", "nombre apellido dni area")
+    .populate("paciente", "nombre apellido dni")
+    .lean();
+};
+
+tareaSchema.statics.eliminarTarea = async function (id) {
+  return this.findByIdAndDelete(id);
+};
+
+tareaSchema.statics.filtrarTareas = async function (filtros = {}) {
+  const filter = {};
+
+  if (filtros.estado) filter.estado = filtros.estado;
+  if (filtros.prioridad) filter.prioridad = filtros.prioridad;
+  if (filtros.area) filter.area = filtros.area;
+  if (filtros.proveedor) filter.proveedor = filtros.proveedor;
+  if (filtros.fechaInicio)
+    filter.fechaInicio = { $gte: new Date(filtros.fechaInicio) };
+  if (filtros.fechaFin) filter.fechaFin = { $lte: new Date(filtros.fechaFin) };
+
+  const tareas = await this.find(filter)
+    .populate({
+      path: "empleado",
+      select: "nombre apellido dni area",
+      match: filtros.dni ? { dni: filtros.dni } : {},
+    })
+    .populate({
+      path: "paciente",
+      select: "nombre apellido dni",
+      match: filtros.dni ? { dni: filtros.dni } : {},
+    })
+    .lean();
+
+  if (filtros.dni) {
+    return tareas.filter((t) => t.empleado || t.paciente);
+  }
+
+  return tareas;
+};
+
+const Tarea = mongoose.model("Tarea", tareaSchema);
+
+export default Tarea;
