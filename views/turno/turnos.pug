@@ -1,0 +1,71 @@
+extends ../layout
+include ../mixin/title.pug
+include ../mixin/modal.pug
+
+block head
+    link(rel="stylesheet" href="/stylesheets/turno/turnos.css")
+
+block content
+    +SectionTitle('LISTA DE TURNOS')
+    .top-bar
+        a.btn-add(href="/turnos/new")
+            i(class="fas fa-calendar-plus")
+            |  Nuevo Turno
+        form.search-form(action="/turnos" method="GET")
+            input(type="text" name="dni" placeholder="Buscar por DNI..." value=dni || "")
+            input(type="date" name="fecha" value=fecha || "")
+            button(type="submit")
+                i(class="fas fa-search")
+                | Buscar
+    .cards-container
+        if turnos.length
+            each turno in turnos
+                .card
+                    .card-header  
+                        h3= turno.nombrePaciente
+                        .card-date
+                            - const fecha = new Date(turno.fecha)
+                            span.date= fecha.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                            span.time= fecha.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false }) + ' hs'
+                    .card-body
+                        p
+                            strong Tipo:
+                            |  #{turno.tipoTurno}
+                        p
+                            strong Descripción:
+                            |  #{turno.descripcion || '-'}
+                        p
+                            strong Médico:
+                            |  #{turno.nombreMedico || '-'}
+                        p
+                            strong Estado:
+                            |  #{turno.estado}
+                    .card-actions
+                        a(href=`/turnos/edit/${turno._id}`, title="Editar")
+                            i.fas.fa-edit
+                        form(action=`/turnos/delete/${turno._id}` method="POST" class="delete-form")
+                            input(type="hidden" name="_method" value="DELETE")
+                            button(type="submit" title="Eliminar")
+                                i.fas.fa-trash
+        else
+            p.no-results No se encontraron turnos.
+    if totalPages > 1
+        .pagination
+            .page-buttons
+                if page > 1
+                    a.page-link(href=`?page=${page - 1}${dni ? '&dni=' + dni : ''}${fecha ? '&fecha=' + fecha : ''}`)
+                        i(class="fas fa-arrow-left fa-sm")
+                        |  Anterior
+                if page < totalPages
+                    a.page-link(href=`?page=${page + 1}${dni ? '&dni=' + dni : ''}${fecha ? '&fecha=' + fecha : ''}`)
+                        |  Siguiente
+                        i(class="fas fa-arrow-right fa-sm")
+            span.page-info Página #{page} de #{totalPages}
+    +Modal('confirmModal', 'Confirmar eliminación', '¿Estás seguro de que deseas eliminar este turno?', 'confirm')
+
+
+
+
+
+block scripts
+    script(src="/javascripts/mixin/deleteModal.js")

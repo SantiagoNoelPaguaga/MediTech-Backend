@@ -242,13 +242,13 @@ const obtenerMedicoPorId = async (id) => {
 };
 
 const obtenerMedicos = async () => {
-  try {
-    const medicos = await Medico.find({});
-    return medicos;
-  } catch (error) {
-    console.error("Error al obtener todos los médicos:", error);
-    throw new Error("Error al obtener la lista de médicos");
-  }
+    try {
+        const medicos = await Medico.find({}); 
+        return medicos;
+    } catch (error) {
+        console.error("Error al obtener todos los médicos:", error);
+        throw new Error("Error al obtener la lista de médicos");
+    }
 };
 
 export default {
@@ -259,5 +259,5 @@ export default {
   actualizarMedico,
   eliminarMedico,
   obtenerMedicoPorId,
-  obtenerMedicos,
+  obtenerMedicos
 };

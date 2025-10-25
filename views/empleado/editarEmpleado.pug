@@ -1,0 +1,50 @@
+extends ../layout
+include ../mixin/title.pug
+include ../mixin/modal.pug
+
+block head
+  link(rel="stylesheet" href="/stylesheets/empleado/forms-empleado.css")
+
+block content
+  +SectionTitle('ACTUALIZAR EMPLEADO')
+
+  form(id="formEmpleado" action=`/empleados/edit/${empleado._id}` method="POST")
+    input(type="hidden" name="_method" value="PUT")
+
+    label(for="nombre") Nombre
+    input(type="text" name="nombre" id="nombre" value=(empleado && empleado.nombre ? empleado.nombre : ''))
+
+    label(for="apellido") Apellido
+    input(type="text" name="apellido" id="apellido" value=(empleado && empleado.apellido ? empleado.apellido : ''))
+
+    label(for="dni") DNI
+    input(type="text" name="dni" id="dni" value=(empleado && empleado.dni ? empleado.dni : ''))
+
+    label(for="rolSelect") Rol
+    select(name="rol" id="rolSelect")
+      option(value="") Seleccione un rol
+      each rolOption in roles
+        option(
+          value=rolOption
+          selected=(empleado && empleado.rol === rolOption)
+        )= rolOption
+
+    label(for="areaSelect") Área
+    select(name="area" id="area" data-empleado-area=empleado.area)
+      option(value="") Seleccione un área
+      each areaOption in areas
+        option(
+          value=areaOption
+          selected=(empleado && empleado.area === areaOption)
+        )= areaOption
+
+    button(type="submit") Guardar cambios
+
+  if modalMessage
+    +Modal('modalGeneric', modalTitle, modalMessage, modalType)
+
+block scripts
+  script(src="/javascripts/empleado/editEmpleado.js")
+
+
+

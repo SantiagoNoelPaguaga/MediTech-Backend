@@ -1,0 +1,63 @@
+extends ../layout
+include ../mixin/title.pug
+include ../mixin/modal.pug
+
+block head
+  link(rel="stylesheet" href="/stylesheets/empleado/forms-empleado.css")
+
+block content
+  +SectionTitle('REGISTRAR EMPLEADO')
+
+  form(id="formEmpleado" action="/empleados/new" method="POST")
+    label(for="nombre") Nombre
+    input(
+      type="text"
+      name="nombre"
+      id="nombre"
+      placeholder="Ingrese el nombre"
+      value=(formData && formData.nombre ? formData.nombre : '')
+    )
+
+    label(for="apellido") Apellido
+    input(
+      type="text"
+      name="apellido"
+      id="apellido"
+      placeholder="Ingrese el apellido"
+      value=(formData && formData.apellido ? formData.apellido : '')
+    )
+
+    label(for="dni") DNI
+    input(
+      type="text"
+      name="dni"
+      id="dni"
+      placeholder="Ingrese el DNI"
+      value=(formData && formData.dni ? formData.dni : '')
+    )
+
+    label(for="rol") Rol
+    select(name="rol" id="rol")
+      option(value="") Seleccione un rol
+      each rolOption in roles
+        option(
+          value=rolOption
+          selected=(formData && formData.rol === rolOption)
+        )= rolOption
+
+    label(for="area") Área
+    select(name="area" id="area")
+      option(value="") Seleccione un área
+      each areaOption in areas
+        option(
+          value=areaOption
+          selected=(formData && formData.area === areaOption)
+        )= areaOption
+
+    button(type="submit") Registrar empleado
+
+  if modalMessage
+    +Modal('modalGeneric', modalTitle, modalMessage, modalType)
+
+block scripts
+  script(src="/javascripts/empleado/nuevoEmpleado.js")

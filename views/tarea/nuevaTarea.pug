@@ -1,0 +1,113 @@
+extends ../layout
+include ../mixin/title.pug
+include ../mixin/modal.pug
+
+block head
+  link(rel="stylesheet" href="/stylesheets/tarea/forms-tarea.css")
+
+block content
+  +SectionTitle('REGISTRAR TAREA')
+
+  form#formTarea(action="/tareas/new" method="POST")
+
+    .dni-busqueda
+      label(for="dniEmpleado") DNI del Empleado
+      .input-group
+        input#dniEmpleado(
+          type="text"
+          name="dniEmpleado"
+          placeholder="Ingrese DNI del empleado"
+          value=(formData && formData.dniEmpleado || formData && formData.dni || '')
+        )
+        button#btnBuscarEmpleado(type="button") Buscar
+
+    #infoEmpleado.card(style="display:none;")
+      h4 Información del Empleado
+      p
+        strong Nombre:
+        | 
+        span#nombreEmpleado
+      p
+        strong Apellido:
+        | 
+        span#apellidoEmpleado
+      p
+        strong Rol:
+        | 
+        span#rolEmpleado
+      p
+        strong Área:
+        | 
+        span#areaEmpleado
+
+      input#empleadoHidden(type="hidden" name="empleado")
+      input#areaHidden(type="hidden" name="area")
+      input#nombreEmpleadoHidden(type="hidden" name="nombreEmpleado")
+      input#apellidoEmpleadoHidden(type="hidden" name="apellidoEmpleado")
+      input#rolEmpleadoHidden(type="hidden" name="rolEmpleado")
+
+    .dni-busqueda#dniPacienteDiv(style="display:none;")
+      label(for="dniPaciente") DNI del Paciente
+      .input-group
+        input#dniPaciente(
+          type="text"
+          name="dniPaciente"
+          placeholder="Ingrese DNI del paciente"
+          value=(formData && formData.dniPaciente || formData && formData.pacienteDni || '')
+        )
+        button#btnBuscarPaciente(type="button") Buscar
+
+    #infoPaciente.card(style="display:none;")
+      h4 Información del Paciente
+      p
+        strong Nombre completo:
+        | 
+        span#nombrePaciente
+
+      input#pacienteHidden(type="hidden" name="pacienteId")
+      input#nombrePacienteHidden(type="hidden" name="pacienteNombre")
+
+    #camposTarea(style="display:none;")
+      #proveedorDiv
+        label(for="proveedor") Proveedor
+        select#proveedor(name="proveedor")
+          option(value="" disabled selected) Seleccione proveedor
+          each proveedor in (proveedores || [])
+            option(value=proveedor selected=(formData && formData.proveedor === proveedor))= proveedor
+
+      label(for="titulo") Título
+      select#titulo(name="titulo")
+        option(value="" disabled selected) Seleccione un título
+
+      label(for="descripcion") Descripción
+      textarea#descripcion(name="descripcion" rows="3") #{formData && formData.descripcion || ''}
+
+      label(for="estado") Estado
+      select#estado(name="estado" required)
+        each estado in ["PENDIENTE", "EN CURSO", "COMPLETADA", "CANCELADA"]
+          option(value=estado selected=(formData && formData.estado === estado))= estado
+
+      label(for="prioridad") Prioridad
+      select#prioridad(name="prioridad" required)
+        each prioridad in ["BAJA", "MEDIA", "ALTA"]
+          option(value=prioridad selected=(formData && formData.prioridad === prioridad))= prioridad
+
+      label(for="fechaInicio") Fecha de inicio
+      input#fechaInicio(type="date" name="fechaInicio" value=(formData && formData.fechaInicio || ''))
+
+      label(for="fechaFin") Fecha de fin
+      input#fechaFin(type="date" name="fechaFin" value=(formData && formData.fechaFin || ''))
+
+      label(for="observaciones") Observaciones
+      textarea#observaciones(name="observaciones" rows="3") #{formData && formData.observaciones || ''}
+
+      button(type="submit") Guardar Tarea
+
+  if modalMessage
+    +Modal('modalGeneric', modalTitle, modalMessage, modalType)
+
+block scripts
+  script.
+    window.TITULOS_POR_AREA = !{JSON.stringify(titulosPorArea || {})};
+    window.formData = !{JSON.stringify(formData || {})};
+  script(src="/javascripts/tarea/nuevaTarea.js")

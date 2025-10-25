@@ -1,191 +1,426 @@
-import TareaModel from '../models/TareaModel.js';
-import EmpleadoModel from '../models/EmpleadoModel.js';
-import AreaModel from '../models/AreaModel.js';
-import TituloTareaModel from '../models/TituloTareaModel.js';
+import mongoose from "mongoose";
+import Tarea from "../models/TareaModel.js";
+import EmpleadoController from "./empleadoController.js";
+import PacienteController from "./pacienteController.js";
 
-async function mostrarTareas(req, res) {
+const PROVEEDORES = [
+  "Distribuidora Médica Sur",
+  "Farmalab",
+  "ProveSalud",
+  "BioTech",
+  "Medimport",
+  "Otro",
+];
+
+const TITULOS_POR_AREA = {
+  "Administración de Turnos": [
+    "Alta de turno para paciente",
+    "Reprogramación o cancelación de cita",
+    "Confirmación de asistencia",
+    "Asignación de médico a turno",
+  ],
+  "Atención Médica": [
+    "Consulta general de paciente",
+    "Control de signos vitales",
+    "Aplicación de tratamiento o medicación",
+    "Seguimiento post-tratamiento",
+  ],
+  "Gestión de Insumos Médicos": [
+    "Carga de nuevo insumo al stock",
+    "Control de vencimientos",
+    "Reposición de materiales",
+    "Baja por uso o descarte",
+  ],
+  Facturación: [
+    "Generación de factura a paciente",
+    "Registro de pagos recibidos",
+    "Validación de cobertura de seguros",
+    "Emisión de reportes contables",
+  ],
+};
+
+const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(String(id));
+
+const normalizarDatosTarea = (raw) => {
+  const data = raw || {};
+  let empleadoId =
+    typeof data.empleado === "string"
+      ? data.empleado
+      : data.empleado?.id || data.empleado?._id || data["empleado[id]"];
+
+  if (!empleadoId && data.empleadoId) empleadoId = data.empleadoId;
+
+  let pacienteId =
+    data.pacienteId ||
+    (data.paciente && typeof data.paciente === "string"
+      ? data.paciente
+      : data.paciente?._id || data.paciente?.id);
+
+  const area =
+    data.area ||
+    data["empleado[area]"] ||
+    data.empleado?.area ||
+    data.areaHidden;
+
+  const tareaData = {
+    titulo: data.titulo,
+    estado: data.estado,
+    prioridad: data.prioridad,
+    fechaInicio: data.fechaInicio,
+    fechaFin: data.fechaFin,
+    area,
+    empleado: empleadoId,
+    paciente: pacienteId || null,
+    proveedor: data.proveedor || null,
+    descripcion: data.descripcion,
+    observaciones: data.observaciones,
+  };
+
+  if (tareaData.empleado && !isValidObjectId(tareaData.empleado)) {
+    tareaData.empleado = null;
+  }
+  if (tareaData.paciente && !isValidObjectId(tareaData.paciente)) {
+    tareaData.paciente = null;
+  }
+
+  return tareaData;
+};
+
+const validarCampos = (data) => {
+  const required = [
+    "titulo",
+    "estado",
+    "prioridad",
+    "area",
+    "empleado",
+    "fechaInicio",
+    "fechaFin",
+  ];
+
+  const etiquetas = {
+    titulo: "Título",
+    estado: "Estado",
+    prioridad: "Prioridad",
+    area: "Área",
+    empleado: "Empleado",
+    fechaInicio: "Fecha de inicio",
+    fechaFin: "Fecha de fin",
+  };
+
+  const missing = required.filter(
+    (f) => !data[f] || String(data[f]).trim() === ""
+  );
+
+  if (missing.length > 0) {
+    const nombresLegibles = missing.map((f) => etiquetas[f] || f);
+    return `Los siguientes campos son obligatorios: ${nombresLegibles.join(
+      ", "
+    )}.`;
+  }
+
+  if (new Date(data.fechaFin) < new Date(data.fechaInicio)) {
+    return "La fecha de fin no puede ser anterior a la fecha de inicio.";
+  }
+
+  return null;
+};
+
+const mostrarTareas = async (req, res) => {
   try {
-    const tareas = await TareaModel.listarTareas();
-    res.render('tareas/tareas', { 
-      titulo: 'Lista de Tareas', 
-      tareas: tareas || [] 
+    const page = parseInt(req.query.page) || 1;
+    const perPage = 10;
+    const filtros = req.query || {};
+
+    const { tareas, totalPages } = await Tarea.listar(page, perPage, filtros);
+
+    res.render("tarea/tareas", {
+      tareas,
+      page,
+      totalPages,
+      filtros,
+      dni: req.query.dni || "",
+      modalMessage: null,
+      modalType: null,
+      modalTitle: null,
     });
   } catch (error) {
-    console.error("Error al mostrar tareas:", error);
-    res.render('tareas/tareas', { 
-      titulo: 'Lista de Tareas', 
-      tareas: [], 
-      mensajeError: error.message 
+    console.error("Error al listar tareas:", error);
+    res.render("tarea/tareas", {
+      tareas: [],
+      page: 1,
+      totalPages: 1,
+      filtros: {},
+      modalMessage: "Error al cargar las tareas",
+      modalType: "error",
+      modalTitle: "Error",
     });
   }
-}
+};
 
-async function formularioNuevaTarea(req, res) {
+const formularioNuevaTarea = async (req, res) => {
   try {
-    const areas = await AreaModel.obtenerAreas();
-    const empleados = await EmpleadoModel.obtenerEmpleados();
-    const tareasPosibles = await TituloTareaModel.obtenerTitulos();
-
-    res.render('tareas/nuevaTarea', {
-      titulo: 'Nueva Tarea',
-      areas,
-      empleados,
-      tareasPosibles
+    res.render("tarea/nuevaTarea", {
+      formData: {},
+      proveedores: PROVEEDORES,
+      titulosPorArea: TITULOS_POR_AREA,
+      modalMessage: null,
+      modalType: null,
+      modalTitle: null,
     });
   } catch (error) {
-    console.error("Error al mostrar formulario nueva tarea:", error);
-    res.render('tareas/nuevaTarea', {
-      titulo: 'Nueva Tarea',
-      areas: [],
-      empleados: [],
-      tareasPosibles: [],
-      mensajeError: error.message
+    console.error("Error al cargar formulario de nueva tarea:", error);
+    res.render("tarea/nuevaTarea", {
+      formData: {},
+      proveedores: PROVEEDORES,
+      titulosPorArea: TITULOS_POR_AREA,
+      modalMessage: "Error al cargar el formulario",
+      modalType: "error",
+      modalTitle: "Error",
     });
   }
-}
+};
 
-async function guardarTarea(req, res) {
+const guardarTarea = async (req, res) => {
   try {
-    const { titulo, area, documentoEmpleado, paciente, estado, prioridad, fechaInicio, fechaFin, proveedor, observaciones } = req.body;
+    const dataRaw = req.body;
+    const tareaData = normalizarDatosTarea(dataRaw);
 
-    if (!titulo || !area || !documentoEmpleado) {
-      return res.render('tareas/nuevaTarea', {
-        titulo: 'Nueva Tarea',
-        mensajeError: 'Los campos tarea, área y empleado son obligatorios',
-        areas: await AreaModel.obtenerAreas(),
-        empleados: await EmpleadoModel.obtenerEmpleados(),
-        tareasPosibles: await TituloTareaModel.obtenerTitulos()
+    const errorValidacion = validarCampos(tareaData);
+    if (errorValidacion) {
+      return res.render("tarea/nuevaTarea", {
+        modalMessage: errorValidacion,
+        modalType: "error",
+        modalTitle: "Error",
+        formData: dataRaw,
+        proveedores: PROVEEDORES,
+        titulosPorArea: TITULOS_POR_AREA,
       });
     }
 
-    await TareaModel.crearTarea({
-      titulo,
-      area,
-      empleado: documentoEmpleado,
-      paciente,
-      estado,
-      prioridad,
-      fechaInicio,
-      fechaFin,
-      proveedor,
-      observaciones
-    });
-    res.redirect('/tareas');
+    await Tarea.crearTarea(tareaData);
+    res.redirect("/tareas");
   } catch (error) {
-    console.error("Error al guardar tarea:", error);
-    res.render('tareas/nuevaTarea', {
-      titulo: 'Nueva Tarea',
-      mensajeError: error.message,
-      areas: await AreaModel.obtenerAreas(),
-      empleados: await EmpleadoModel.obtenerEmpleados(),
-      tareasPosibles: await TituloTareaModel.obtenerTitulos()
+    console.error("Error al crear tarea:", error);
+    res.render("tarea/nuevaTarea", {
+      modalMessage: "Error al guardar la tarea",
+      modalType: "error",
+      modalTitle: "Error",
+      formData: req.body,
+      proveedores: PROVEEDORES,
+      titulosPorArea: TITULOS_POR_AREA,
     });
   }
-}
+};
 
-async function formularioEditarTarea(req, res) {
+const formularioEditarTarea = async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
-    const tareas = await TareaModel.listarTareas();
-    const tareaObj = tareas.find(t => t.id === id);
-    if (!tareaObj) {
-      return res.render('tareas/tareas', { 
-        titulo: 'Lista de Tareas', 
-        tareas, 
-        mensajeError: "Tarea no encontrada." 
+    const tarea = await Tarea.obtenerPorId(req.params.id);
+    if (!tarea) return res.redirect("/tareas");
+
+    const formData = {
+      _id: tarea._id,
+      titulo: tarea.titulo || "",
+      estado: tarea.estado || "",
+      prioridad: tarea.prioridad || "",
+      fechaInicio: tarea.fechaInicio
+        ? tarea.fechaInicio.toISOString().slice(0, 10)
+        : "",
+      fechaFin: tarea.fechaFin ? tarea.fechaFin.toISOString().slice(0, 10) : "",
+      area: tarea.area || "",
+      proveedor: tarea.proveedor || "",
+      descripcion: tarea.descripcion || "",
+      observaciones: tarea.observaciones || "",
+      empleado: tarea.empleado?._id ? String(tarea.empleado._id) : "",
+      dniEmpleado: tarea.empleado?.dni || "",
+      nombreEmpleado: tarea.empleado?.nombre || "",
+      apellidoEmpleado: tarea.empleado?.apellido || "",
+      rolEmpleado: tarea.empleado?.rol || "",
+      pacienteId: tarea.paciente?._id ? String(tarea.paciente._id) : "",
+      dniPaciente: tarea.paciente?.dni || "",
+      nombrePaciente: tarea.paciente?.nombre || "",
+      apellidoPaciente: tarea.paciente?.apellido || "",
+    };
+
+    res.render("tarea/editarTarea", {
+      tarea: formData,
+      proveedores: PROVEEDORES,
+      titulosPorArea: TITULOS_POR_AREA,
+      modalMessage: null,
+      modalType: null,
+      modalTitle: null,
+    });
+  } catch (error) {
+    console.error("Error al cargar formulario de edición:", error);
+    res.redirect("/tareas");
+  }
+};
+
+const actualizarTarea = async (req, res) => {
+  try {
+    const dataRaw = req.body;
+    const tareaData = normalizarDatosTarea(dataRaw);
+    const errorValidacion = validarCampos(tareaData);
+
+    if (errorValidacion) {
+      const tareaCompleta = {
+        _id: req.params.id,
+        titulo: tareaData.titulo || "",
+        estado: tareaData.estado || "",
+        prioridad: tareaData.prioridad || "",
+        fechaInicio: tareaData.fechaInicio || "",
+        fechaFin: tareaData.fechaFin || "",
+        area: tareaData.area || "",
+        empleado: tareaData.empleado || "",
+        dniEmpleado: dataRaw.dniEmpleado || "",
+        nombreEmpleado: dataRaw.nombreEmpleado || "",
+        apellidoEmpleado: dataRaw.apellidoEmpleado || "",
+        rolEmpleado: dataRaw.rolEmpleado || "",
+        pacienteId: tareaData.paciente || "",
+        dniPaciente: dataRaw.dniPaciente || "",
+        nombrePaciente: dataRaw.nombrePaciente || "",
+        apellidoPaciente: dataRaw.apellidoPaciente || "",
+        proveedor: tareaData.proveedor || "",
+        descripcion: tareaData.descripcion || "",
+        observaciones: tareaData.observaciones || "",
+      };
+
+      return res.render("tarea/editarTarea", {
+        modalMessage: errorValidacion,
+        modalType: "error",
+        modalTitle: "Error",
+        tarea: tareaCompleta,
+        proveedores: PROVEEDORES,
+        titulosPorArea: TITULOS_POR_AREA,
       });
     }
-
-    const areas = await AreaModel.obtenerAreas();
-    const empleados = await EmpleadoModel.obtenerEmpleados();
-    const tareasPosibles = await TituloTareaModel.obtenerTitulos();
-
-    res.render('tareas/editarTarea', {
-      titulo: 'Editar Tarea',
-      tarea: tareaObj,
-      areas,
-      empleados,
-      tareasPosibles
-    });
-  } catch (error) {
-    console.error("Error al mostrar formulario editar tarea:", error);
-    res.render('tareas/tareas', { 
-      titulo: 'Lista de Tareas', 
-      tareas: [], 
-      mensajeError: error.message
-    });
-  }
-}
-
-async function actualizarTarea(req, res) {
-  try {
-    const { id } = req.params;
-    const { titulo, area, documentoEmpleado, paciente, estado, prioridad, fechaInicio, fechaFin, proveedor, observaciones } = req.body;
-
-    await TareaModel.actualizarTarea(id, {
-      titulo,
-      area,
-      empleado: documentoEmpleado,
-      paciente,
-      estado,
-      prioridad,
-      fechaInicio,
-      fechaFin,
-      proveedor,
-      observaciones
-    });
-    res.redirect('/tareas');
+    await Tarea.actualizarTarea(req.params.id, tareaData);
+    res.redirect("/tareas");
   } catch (error) {
     console.error("Error al actualizar tarea:", error);
-    res.render('tareas/tareas', { 
-      titulo: 'Lista de Tareas', 
-      tareas: await TareaModel.listarTareas(), 
-      mensajeError: error.message
+
+    const tareaCompleta = {
+      _id: req.params.id,
+      titulo: req.body.titulo || "",
+      estado: req.body.estado || "",
+      prioridad: req.body.prioridad || "",
+      fechaInicio: req.body.fechaInicio || "",
+      fechaFin: req.body.fechaFin || "",
+      area: req.body.area || "",
+      empleado: req.body.empleado || "",
+      dniEmpleado: req.body.dniEmpleado || "",
+      nombreEmpleado: req.body.nombreEmpleado || "",
+      apellidoEmpleado: req.body.apellidoEmpleado || "",
+      rolEmpleado: req.body.rolEmpleado || "",
+      pacienteId: req.body.pacienteId || "",
+      dniPaciente: req.body.dniPaciente || "",
+      nombrePaciente: req.body.nombrePaciente || "",
+      apellidoPaciente: req.body.apellidoPaciente || "",
+      proveedor: req.body.proveedor || "",
+      descripcion: req.body.descripcion || "",
+      observaciones: req.body.observaciones || "",
+    };
+
+    res.render("tarea/editarTarea", {
+      modalMessage: "Error al actualizar la tarea",
+      modalType: "error",
+      modalTitle: "Error",
+      tarea: tareaCompleta,
+      proveedores: PROVEEDORES,
+      titulosPorArea: TITULOS_POR_AREA,
     });
   }
-}
+};
 
-async function eliminarTarea(req, res) {
+const eliminarTarea = async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
-    await TareaModel.eliminarTarea(id);
-    res.redirect('/tareas');
+    await Tarea.eliminarTarea(req.params.id);
+    res.redirect("/tareas");
   } catch (error) {
     console.error("Error al eliminar tarea:", error);
-    res.render('tareas/tareas', { 
-      titulo: 'Lista de Tareas', 
-      tareas: await TareaModel.listarTareas(), 
-      mensajeError: error.message
-    });
+    res.redirect("/tareas");
   }
-}
+};
 
-async function filtrarTareas(req, res) {
+const filtrarTareas = async (req, res) => {
   try {
     const filtros = req.query;
-    const tareas = await TareaModel.filtrarTareas(filtros);
-    res.render('tareas/tareas', { 
-      titulo: 'Tareas Filtradas', 
-      tareas 
+    const tareas = await Tarea.filtrarTareas(filtros);
+
+    res.render("tarea/tareas", {
+      tareas,
+      filtros,
+      modalMessage: null,
+      modalType: null,
+      modalTitle: null,
     });
   } catch (error) {
     console.error("Error al filtrar tareas:", error);
-    res.render('tareas/tareas', { 
-      titulo: 'Tareas Filtradas', 
-      tareas: [], 
-      mensajeError: error.message
+    res.render("tarea/tareas", {
+      tareas: [],
+      filtros: {},
+      modalMessage: "Error al aplicar filtros",
+      modalType: "error",
+      modalTitle: "Error",
     });
   }
-}
+};
 
-const tareaController = {
+const apiBuscarEmpleado = async (req, res) => {
+  try {
+    const { dni } = req.params;
+    if (!dni) return res.status(400).json({ error: "Falta DNI" });
+
+    const empleado = await EmpleadoController.obtenerPorDni(dni);
+    if (!empleado)
+      return res.status(404).json({ error: "Empleado no encontrado" });
+
+    const empleadoDatos = {
+      _id: empleado._id,
+      nombre: empleado.nombre,
+      apellido: empleado.apellido,
+      dni: empleado.dni,
+      rol: empleado.rol,
+      area: empleado.area,
+    };
+
+    res.json(empleadoDatos);
+  } catch (error) {
+    console.error("Error API buscar empleado:", error);
+    res.status(500).json({ error: "Error interno" });
+  }
+};
+
+const apiBuscarPaciente = async (req, res) => {
+  try {
+    const { dni } = req.params;
+    if (!dni) return res.status(400).json({ error: "Falta DNI" });
+
+    const paciente = await PacienteController.obtenerPorDni(dni);
+    if (!paciente)
+      return res.status(404).json({ error: "Paciente no encontrado" });
+
+    const pacienteDatos = {
+      _id: paciente._id,
+      nombre: paciente.nombre,
+      apellido: paciente.apellido,
+      dni: paciente.dni,
+    };
+
+    res.json(pacienteDatos);
+  } catch (error) {
+    console.error("Error API buscar paciente:", error);
+    res.status(500).json({ error: "Error interno" });
+  }
+};
+
+export default {
   mostrarTareas,
   formularioNuevaTarea,
   guardarTarea,
   formularioEditarTarea,
   actualizarTarea,
   eliminarTarea,
-  filtrarTareas
+  filtrarTareas,
+  apiBuscarEmpleado,
+  apiBuscarPaciente,
 };
-
-export default tareaController;
