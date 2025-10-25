@@ -1,36 +1,64 @@
 extends ../layout
+include ../mixin/title.pug
+include ../mixin/modal.pug
 
-block contenido
-  h2.text-center.mb-4 Lista de Empleados
+block head
+  link(rel="stylesheet" href="/stylesheets/empleado/empleados.css")
 
-  if mensajeError
-    .alert.alert-danger(role="alert")= mensajeError
+block content
+  +SectionTitle('LISTA DE EMPLEADOS')
 
-  .text-center.mb-3
-    a.btn.btn-primary(href='/empleados/nuevo') Agregar Empleado Nuevo
+  .top-bar
+    a.btn-add(href="/empleados/new")
+      i(class="fas fa-user-plus")
+      |  Nuevo Empleado
+    form.search-form(action="/empleados" method="GET")
+      input(type="text" name="dni" placeholder="Buscar por DNI..." value=dni || "")
+      button(type="submit")
+        i(class="fas fa-search")
+        | Buscar
 
-  if empleados.length
-    .table-responsive
-      table.table.table-striped.table-bordered.text-nowrap
-        thead(class='table-dark')
-          tr
-            th ID
-            th Nombre
-            th(style="min-width: 140px") Documento
-            th Rol
-            th(style="min-width: 160px") Área
-            th Acciones
-        tbody
-          each empleado in empleados
-            tr
-              td= empleado.id
-              td= empleado.nombre
-              td= empleado.dni
-              td= empleado.rol
-              td= empleado.area
-              td
-                a.btn.btn-sm.btn-warning.me-1(href=`/empleados/editar/${empleado.id}`) Modificar
-                form(method="POST", action=`/empleados/eliminar/${empleado.id}?_method=DELETE`, style="display:inline")
-                  button.btn.btn-sm.btn-danger(type="submit") Eliminar
-  else
-    p.text-center No hay empleados registrados.
+  .cards-container
+    if empleados.length
+      each empleado in empleados
+        .card
+          .card-header
+            h3= empleado.nombre + " " + empleado.apellido
+          .card-body
+            p
+              strong DNI:
+              |  #{empleado.dni}
+            p
+              strong Rol:
+              |  #{empleado.rol}
+            p
+              strong Área:
+              |  #{empleado.area}
+          .card-actions
+            if empleado.rol !== 'Médico'
+              a(href=`/empleados/edit/${empleado._id}`, title="Editar")
+                i.fas.fa-edit
+              form(action=`/empleados/delete/${empleado._id}` method="POST" class="delete-form")
+                input(type="hidden" name="_method" value="DELETE")
+                button(type="submit" title="Eliminar")
+                  i.fas.fa-trash
+    else
+      p.no-results No se encontraron empleados.
+
+  if totalPages > 1
+    .pagination
+      .page-buttons
+        if page > 1
+          a.page-link(href=`?page=${page - 1}`)
+            i(class="fas fa-arrow-left fa-sm")
+            |  Anterior
+        if page < totalPages
+          a.page-link(href=`?page=${page + 1}`)
+            |  Siguiente
+            i(class="fas fa-arrow-right fa-sm")
+      span.page-info Página #{page} de #{totalPages}
+
+  +Modal('confirmModal', 'Confirmar eliminación', '¿Estás seguro de que deseas eliminar este empleado?', 'confirm')
+
+block scripts
+  script(src="/javascripts/mixin/deleteModal.js")
