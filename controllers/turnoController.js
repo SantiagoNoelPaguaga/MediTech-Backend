@@ -288,7 +288,7 @@ const buscarPacientePorIdForm = async (req, res) => {
 
     if (!paciente) {
       return res.render("turno/nuevoTurno", {
-        modalMessage: "No se encontró un paciente con DNI ${dni}",
+        modalMessage: `No se encontró un paciente con DNI ${dni}`,
         modalType: "error",
         modalTitle: "Paciente no encontrado",
         formData: {},
