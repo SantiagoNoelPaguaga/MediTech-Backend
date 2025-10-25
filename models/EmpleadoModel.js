@@ -1,109 +1,75 @@
-import { readFile, writeFile } from 'fs/promises';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import mongoose from "mongoose";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const fileEmpleados = path.join(__dirname, '../data/empleados.json');
-const fileRoles = path.join(__dirname, '../data/roles.json');
-const fileAreas = path.join(__dirname, '../data/areas.json');
+const ROLES = [
+  "Administrador",
+  "Médico",
+  "Recepcionista",
+  "Encargado de Stock",
+];
+const AREAS = [
+  "Administración de Turnos",
+  "Atención Médica",
+  "Gestión de Insumos Médicos",
+  "Facturación",
+];
 
-async function leerJSON(ruta) {
-  try {
-    const data = await readFile(ruta, 'utf-8');
-    return JSON.parse(data);
-  } catch {
-    return [];
-  }
-}
+const empleadoSchema = new mongoose.Schema(
+  {
+    nombre: { type: String, required: true },
+    apellido: { type: String, required: true },
+    dni: { type: String, required: true, unique: true },
+    rol: { type: String, required: true, enum: ROLES },
+    area: { type: String, required: true, enum: AREAS },
+  },
+  { timestamps: true }
+);
 
-async function guardarJSON(ruta, datos) {
-  await writeFile(ruta, JSON.stringify(datos, null, 2));
-}
+empleadoSchema.statics.listar = async function (
+  page = 1,
+  perPage = 12,
+  dni = ""
+) {
+  const filter = dni ? { dni: { $regex: dni, $options: "i" } } : {};
+  const total = await this.countDocuments(filter);
+  const totalPages = Math.ceil(total / perPage);
 
-// GET
-async function obtenerEmpleados() {
-  return await leerJSON(fileEmpleados);
-}
+  const empleados = await this.find(filter)
+    .skip((page - 1) * perPage)
+    .limit(perPage)
+    .lean();
 
-// POST
-async function crearEmpleado(nombre, rol, area, dni) {
-  const rolesValidos = await leerJSON(fileRoles);
-  const areasValidas = await leerJSON(fileAreas);
-
-  if (!rolesValidos.includes(rol)) {
-    throw new Error(`Rol inválido. Valores permitidos: ${rolesValidos.join(', ')}`);
-  }
-  if (!areasValidas.includes(area)) {
-    throw new Error(`Área inválida. Valores permitidos: ${areasValidas.join(', ')}`);
-  }
-  if (!dni) throw new Error("DNI es requerido");
-
-  const empleados = await obtenerEmpleados();
-  if (empleados.some(e => e.dni === dni)) {
-    throw new Error(`Ya existe un empleado con DNI ${dni}`);
-  }
-
-  const nuevoEmpleado = {
-    id: empleados.length ? empleados[empleados.length - 1].id + 1 : 1,
-    nombre,
-    rol, 
-    area,
-    dni
-  };
-
-  empleados.push(nuevoEmpleado);
-  await guardarJSON(fileEmpleados, empleados);
-  return nuevoEmpleado;
-}
-
-// PUT
-async function actualizarEmpleado(id, nombre, rol, area, dni) {
-  const rolesValidos = await leerJSON(fileRoles);
-  const areasValidas = await leerJSON(fileAreas);
-
-  const empleados = await obtenerEmpleados();
-  const index = empleados.findIndex(e => e.id === Number(id));
-  if (index === -1) throw new Error("Empleado no encontrado");
-
-  if (rol && !rolesValidos.includes(rol)) {
-    throw new Error(`Rol inválido. Valores permitidos: ${rolesValidos.join(', ')}`);
-  }
-  if (area && !areasValidas.includes(area)) {
-    throw new Error(`Área inválida. Valores permitidos: ${areasValidas.join(', ')}`);
-  }
-  if (dni && empleados.some((e, i) => e.dni === dni && i !== index)) {
-    throw new Error(`Ya existe otro empleado con DNI ${dni}`);
-  }
-
-  if (nombre !== undefined) empleados[index].nombre = nombre;
-  if (rol !== undefined) empleados[index].rol = rol;
-  if (area !== undefined) empleados[index].area = area;
-  if (dni !== undefined) empleados[index].dni = dni;
-
-  await guardarJSON(fileEmpleados, empleados);
-  return empleados[index];
-}
-
-// DELETE
-async function eliminarEmpleado(id) {
-  const empleados = await obtenerEmpleados();
-  const index = empleados.findIndex(e => e.id === Number(id));
-
-  if (index === -1) {
-    throw new Error("Empleado no encontrado");
-  }
-
-  empleados.splice(index, 1); 
-  await guardarJSON(fileEmpleados, empleados);
-  return { mensaje: "Empleado eliminado" };
-}
-
-const EmpleadoModel = {
-  obtenerEmpleados,
-  crearEmpleado,
-  actualizarEmpleado,
-  eliminarEmpleado
+  return { empleados, totalPages };
 };
 
-export default EmpleadoModel;
+empleadoSchema.statics.crearEmpleado = async function (data) {
+  const empleado = new this(data);
+  return empleado.save();
+};
+
+empleadoSchema.statics.obtenerPorId = async function (id) {
+  return this.findById(id).lean();
+};
+
+empleadoSchema.statics.actualizarEmpleado = async function (id, data) {
+  return this.findByIdAndUpdate(id, data, { new: true });
+};
+
+empleadoSchema.statics.eliminarEmpleado = async function (id) {
+  return this.findByIdAndDelete(id);
+};
+
+empleadoSchema.statics.obtenerPorDni = async function (dni) {
+  return this.findOne({ dni }).lean();
+};
+
+empleadoSchema.statics.obtenerRoles = function () {
+  return ROLES;
+};
+
+empleadoSchema.statics.obtenerAreas = function () {
+  return AREAS;
+};
+
+const Empleado = mongoose.model("Empleado", empleadoSchema);
+
+export default Empleado;
