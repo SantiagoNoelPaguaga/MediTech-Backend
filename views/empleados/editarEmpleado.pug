@@ -1,66 +1,50 @@
 extends ../layout
+include ../mixin/title.pug
+include ../mixin/modal.pug
 
-block contenido
-  .container
-    .row.justify-content-center
-      .col-md-6
-        h2.text-center.mb-4 Editar Empleado
+block head
+  link(rel="stylesheet" href="/stylesheets/empleado/forms-empleado.css")
 
-        if mensajeError
-          .alert.alert-danger(role="alert")= mensajeError
+block content
+  +SectionTitle('ACTUALIZAR EMPLEADO')
 
-        form(method="POST", action=`/empleados/actualizar/${empleado.id}`)
-          .mb-3
-            label.form-label(for="nombre") Nombre:
-            input.form-control(type="text", name="nombre", value=empleado.nombre, required)
+  form(id="formEmpleado" action=`/empleados/edit/${empleado._id}` method="POST")
+    input(type="hidden" name="_method" value="PUT")
 
-          .mb-3
-            label.form-label(for="dni") Documento:
-            input.form-control(type="text", name="dni", value=empleado.dni, required)
+    label(for="nombre") Nombre
+    input(type="text" name="nombre" id="nombre" value=(empleado && empleado.nombre ? empleado.nombre : ''))
 
-          .mb-3
-            label.form-label(for="rol") Rol:
-            select.form-select(name="rol", id="rolSelect", required)
-              each rol in roles
-                if rol === empleado.rol
-                  option(value=rol, selected)= rol
-                else
-                  option(value=rol)= rol
+    label(for="apellido") Apellido
+    input(type="text" name="apellido" id="apellido" value=(empleado && empleado.apellido ? empleado.apellido : ''))
 
-          .mb-3
-            label.form-label(for="area") Área:
-            select.form-select(name="area", id="areaSelect", required)
-      
-          .text-center
-            button.btn.btn-primary(type="submit") Guardar Cambios
+    label(for="dni") DNI
+    input(type="text" name="dni" id="dni" value=(empleado && empleado.dni ? empleado.dni : ''))
 
-  script.
-    const areasPorRol = {
-      "Administrador": ["Administración de Turnos", "Facturación"],
-      "Médico": ["Atención Médica"],
-      "Recepcionista": ["Administración de Turnos", "Facturación"],
-      "Encargado de Stock": ["Gestión de Insumos Médicos"]
-    };
+    label(for="rolSelect") Rol
+    select(name="rol" id="rolSelect")
+      option(value="") Seleccione un rol
+      each rolOption in roles
+        option(
+          value=rolOption
+          selected=(empleado && empleado.rol === rolOption)
+        )= rolOption
 
-    const rolSelect = document.getElementById('rolSelect');
-    const areaSelect = document.getElementById('areaSelect');
-    const empleadoArea = !{JSON.stringify(empleado.area)};
+    label(for="areaSelect") Área
+    select(name="area" id="area" data-empleado-area=empleado.area)
+      option(value="") Seleccione un área
+      each areaOption in areas
+        option(
+          value=areaOption
+          selected=(empleado && empleado.area === areaOption)
+        )= areaOption
 
-    function actualizarAreas() {
-      const rol = rolSelect.value;
-      const areasValidas = areasPorRol[rol] || [];
+    button(type="submit") Guardar cambios
 
-      areaSelect.innerHTML = '';
+  if modalMessage
+    +Modal('modalGeneric', modalTitle, modalMessage, modalType)
 
-      areasValidas.forEach(a => {
-        const option = document.createElement('option');
-        option.value = a;
-        option.textContent = a;
-        if (a === empleadoArea) option.selected = true;
-        areaSelect.appendChild(option);
-      });
-    }
+block scripts
+  script(src="/javascripts/empleado/editEmpleado.js")
 
-    rolSelect.addEventListener('change', actualizarAreas);
 
-    window.addEventListener('DOMContentLoaded', actualizarAreas);
+

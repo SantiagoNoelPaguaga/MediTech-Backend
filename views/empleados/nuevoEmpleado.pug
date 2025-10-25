@@ -1,68 +1,63 @@
 extends ../layout
+include ../mixin/title.pug
+include ../mixin/modal.pug
 
-block contenido
-  .container
-    .row.justify-content-center
-      .col-md-6
-        h2.text-center.mb-4 Crear Nuevo Empleado
+block head
+  link(rel="stylesheet" href="/stylesheets/empleado/forms-empleado.css")
 
-        if mensajeError
-          .alert.alert-danger(role="alert")= mensajeError
+block content
+  +SectionTitle('REGISTRAR EMPLEADO')
 
-        form(method="POST", action="/empleados/nuevo")
-          .mb-3
-            label.form-label(for="nombre") Nombre:
-            input.form-control(type="text", name="nombre", required)
+  form(id="formEmpleado" action="/empleados/new" method="POST")
+    label(for="nombre") Nombre
+    input(
+      type="text"
+      name="nombre"
+      id="nombre"
+      placeholder="Ingrese el nombre"
+      value=(formData && formData.nombre ? formData.nombre : '')
+    )
 
-          .mb-3
-            label.form-label(for="dni") Documento:
-            input.form-control(type="text", name="dni", required)
+    label(for="apellido") Apellido
+    input(
+      type="text"
+      name="apellido"
+      id="apellido"
+      placeholder="Ingrese el apellido"
+      value=(formData && formData.apellido ? formData.apellido : '')
+    )
 
-          .mb-3
-            label.form-label(for="rol") Rol:
-            select.form-select(name="rol", id="rolSelect", required)
-              option(value="", disabled selected) Selecciona un rol
-              each rol in roles
-                option(value=rol)= rol
+    label(for="dni") DNI
+    input(
+      type="text"
+      name="dni"
+      id="dni"
+      placeholder="Ingrese el DNI"
+      value=(formData && formData.dni ? formData.dni : '')
+    )
 
-          .mb-3
-            label.form-label(for="area") Área:
-            select.form-select(name="area", id="areaSelect", required)
-              option(value="", disabled selected) Selecciona un área
-              each area in areas
-                option(value=area)= area
+    label(for="rol") Rol
+    select(name="rol" id="rol")
+      option(value="") Seleccione un rol
+      each rolOption in roles
+        option(
+          value=rolOption
+          selected=(formData && formData.rol === rolOption)
+        )= rolOption
 
-          .text-center
-            button.btn.btn-success(type="submit") Guardar
+    label(for="area") Área
+    select(name="area" id="area")
+      option(value="") Seleccione un área
+      each areaOption in areas
+        option(
+          value=areaOption
+          selected=(formData && formData.area === areaOption)
+        )= areaOption
 
-  script.
-    const areasPorRol = {
-      "Administrador": ["Administración de Turnos", "Facturación"],
-      "Médico": ["Atención Médica"],
-      "Recepcionista": ["Administración de Turnos", "Facturación"],
-      "Encargado de Stock": ["Gestión de Insumos Médicos"]
-    };
+    button(type="submit") Registrar empleado
 
-    const rolSelect = document.getElementById('rolSelect');
-    const areaSelect = document.getElementById('areaSelect');
+  if modalMessage
+    +Modal('modalGeneric', modalTitle, modalMessage, modalType)
 
-    rolSelect.addEventListener('change', () => {
-      const rol = rolSelect.value;
-      const areasValidas = areasPorRol[rol] || [];
-
-      areaSelect.innerHTML = '';
-
-      const defaultOption = document.createElement('option');
-      defaultOption.value = '';
-      defaultOption.disabled = true;
-      defaultOption.selected = true;
-      defaultOption.textContent = 'Selecciona un área';
-      areaSelect.appendChild(defaultOption);
-
-      areasValidas.forEach(a => {
-        const option = document.createElement('option');
-        option.value = a;
-        option.textContent = a;
-        areaSelect.appendChild(option);
-      });
-    });
+block scripts
+  script(src="/javascripts/empleado/nuevoEmpleado.js")

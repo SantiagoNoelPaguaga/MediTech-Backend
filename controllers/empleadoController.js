@@ -1,131 +1,284 @@
-import EmpleadoModel from '../models/EmpleadoModel.js';
-import AreaModel from '../models/AreaModel.js';
-import RolModel from '../models/RolModel.js';
+import Empleado from "../models/EmpleadoModel.js";
+import MedicoController from "./medicoController.js";
 
-async function mostrarEmpleados(req, res) {
+const validarCampos = (data) => {
+  const requiredFields = ["nombre", "apellido", "dni", "rol", "area"];
+  const missingFields = requiredFields.filter(
+    (field) => !data[field] || data[field].trim() === ""
+  );
+  if (missingFields.length > 0) {
+    return `Los siguientes campos son obligatorios: ${missingFields.join(
+      ", "
+    )}`;
+  }
+  return null;
+};
+
+const rolesExcluidos = ["Médico"];
+const areasExcluidas = ["Atención Médica"];
+
+const mostrarEmpleados = async (req, res) => {
   try {
-    const empleados = await EmpleadoModel.obtenerEmpleados();
-    res.render('empleados/empleados', { 
-      titulo: 'Lista de Empleados', 
-      empleados: empleados || [] 
+    const page = parseInt(req.query.page) || 1;
+    const perPage = 12;
+    const dni = req.query.dni || "";
+
+    const { empleados, totalPages } = await Empleado.listar(page, perPage, dni);
+    res.render("empleado/empleados", {
+      empleados,
+      page,
+      totalPages,
+      dni,
+      modalMessage: null,
+      modalType: null,
+      modalTitle: null,
     });
   } catch (error) {
-    res.render('empleados/empleados', { 
-      titulo: 'Lista de Empleados', 
-      empleados: [], 
-      mensajeError: error.message 
+    console.error(error);
+    res.render("empleado/empleados", {
+      empleados: [],
+      page: 1,
+      totalPages: 1,
+      dni: "",
+      modalMessage: "Error al cargar empleados",
+      modalType: "error",
+      modalTitle: "Error",
     });
   }
-}
+};
 
-async function formularioNuevoEmpleado(req, res) {
+const formularioNuevoEmpleado = async (req, res) => {
   try {
-    const areas = await AreaModel.obtenerAreas();
-    const roles = await RolModel.obtenerRoles();
-    res.render('empleados/nuevoEmpleado', { 
-      titulo: 'Nuevo Empleado', 
-      areas, 
-      roles 
+    const roles = Empleado.obtenerRoles().filter(
+      (rol) => !rolesExcluidos.includes(rol)
+    );
+    const areas = Empleado.obtenerAreas().filter(
+      (area) => !areasExcluidas.includes(area)
+    );
+
+    res.render("empleado/nuevoEmpleado", {
+      formData: {},
+      roles,
+      areas,
+      modalMessage: null,
+      modalType: null,
+      modalTitle: null,
     });
   } catch (error) {
-    res.render('empleados/nuevoEmpleado', { 
-      titulo: 'Nuevo Empleado', 
-      areas: [], 
-      roles: [], 
-      mensajeError: error.message 
+    console.error("Error al cargar formulario de nuevo empleado:", error);
+    res.render("empleado/nuevoEmpleado", {
+      formData: {},
+      roles: [],
+      areas: [],
+      modalMessage: "Error al cargar roles y áreas",
+      modalType: "error",
+      modalTitle: "Error",
     });
   }
-}
+};
 
-async function guardarEmpleado(req, res) {
+const guardarEmpleado = async (req, res) => {
+  const data = req.body;
+
+  const errorValidacion = validarCampos(data);
+  if (errorValidacion) {
+    return renderErrorNuevo(res, data, errorValidacion);
+  }
+
+  if (data.rol === "Médico") {
+    return renderErrorNuevo(
+      res,
+      data,
+      "No está permitido registrar empleados con rol de Médico desde este formulario."
+    );
+  }
+
   try {
-    const { nombre, rol, area, dni } = req.body;
-    if (!nombre || !rol || !area || !dni) 
-      throw new Error('Todos los campos son requeridos');
-
-    await EmpleadoModel.crearEmpleado(nombre, rol, area, dni);
-    res.redirect('/empleados');
+    await Empleado.crearEmpleado(data);
+    res.redirect("/empleados");
   } catch (error) {
-    const areas = await AreaModel.obtenerAreas();
-    const roles = await RolModel.obtenerRoles();
-    res.render('empleados/nuevoEmpleado', { 
-      titulo: 'Nuevo Empleado', 
-      areas, 
-      roles, 
-      mensajeError: error.message 
-    });
+    console.error(error);
+    let message = "Error al guardar empleado";
+    if (error.code === 11000) message = "Ya existe un empleado con ese DNI";
+    return renderErrorNuevo(res, data, message);
   }
-}
+};
 
-async function formularioEditarEmpleado(req, res) {
+const renderErrorNuevo = (res, data, message) => {
+  const roles = Empleado.obtenerRoles().filter(
+    (rol) => !rolesExcluidos.includes(rol)
+  );
+  const areas = Empleado.obtenerAreas().filter(
+    (area) => !areasExcluidas.includes(area)
+  );
+  res.render("empleado/nuevoEmpleado", {
+    modalMessage: message,
+    modalType: "error",
+    modalTitle: "Error",
+    formData: data,
+    roles,
+    areas,
+  });
+};
+
+const formularioEditarEmpleado = async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
-    const empleados = await EmpleadoModel.obtenerEmpleados();
-    const empleado = empleados.find(e => e.id === id);
-    if (!empleado) throw new Error('Empleado no encontrado');
+    const empleado = await Empleado.obtenerPorId(req.params.id);
+    if (!empleado) return res.redirect("/empleados");
 
-    const areas = await AreaModel.obtenerAreas();
-    const roles = await RolModel.obtenerRoles();
-    res.render('empleados/editarEmpleado', { 
-      titulo: 'Editar Empleado', 
-      empleado, 
-      areas, 
-      roles 
+    const roles = Empleado.obtenerRoles().filter(
+      (rol) => !rolesExcluidos.includes(rol)
+    );
+    const areas = Empleado.obtenerAreas().filter(
+      (area) => !areasExcluidas.includes(area)
+    );
+
+    res.render("empleado/editarEmpleado", {
+      empleado,
+      roles,
+      areas,
+      modalMessage: null,
+      modalType: null,
+      modalTitle: null,
     });
   } catch (error) {
-    res.render('empleados/editarEmpleado', { 
-      titulo: 'Editar Empleado', 
-      empleado: {}, 
-      areas: [], 
-      roles: [], 
-      mensajeError: error.message 
-    });
+    console.error("Error al cargar formulario de edición:", error);
+    res.redirect("/empleados");
   }
-}
+};
 
-async function actualizarEmpleado(req, res) {
+const actualizarEmpleado = async (req, res) => {
+  const data = req.body;
+
+  const errorValidacion = validarCampos(data);
+  if (errorValidacion) {
+    return renderErrorEditar(res, req.params.id, data, errorValidacion);
+  }
+
   try {
-    const { id } = req.params;
-    const { nombre, rol, area, dni } = req.body;
-    await EmpleadoModel.actualizarEmpleado(id, nombre, rol, area, dni);
-    res.redirect('/empleados');
-  } catch (error) {
-    const areas = await AreaModel.obtenerAreas();
-    const roles = await RolModel.obtenerRoles();
-    const empleados = await EmpleadoModel.obtenerEmpleados();
-    const empleado = empleados.find(e => e.id === parseInt(req.params.id)) || {};
-    res.render('empleados/editarEmpleado', { 
-      titulo: 'Editar Empleado', 
-      empleado, 
-      areas, 
-      roles, 
-      mensajeError: error.message 
-    });
-  }
-}
+    const empleadoExistente = await Empleado.obtenerPorId(req.params.id);
+    if (!empleadoExistente) return res.redirect("/empleados");
 
-async function eliminarEmpleado(req, res) {
+    if (empleadoExistente.rol === "Médico") {
+      return res.redirect("/empleados");
+    }
+
+    await Empleado.actualizarEmpleado(req.params.id, data);
+    res.redirect("/empleados");
+  } catch (error) {
+    console.error(error);
+    let message = "Error al actualizar empleado";
+    if (error.code === 11000) message = "Ya existe un empleado con ese DNI";
+    return renderErrorEditar(res, req.params.id, data, message);
+  }
+};
+
+const renderErrorEditar = (res, id, data, message) => {
+  const roles = Empleado.obtenerRoles().filter(
+    (rol) => !rolesExcluidos.includes(rol)
+  );
+  const areas = Empleado.obtenerAreas().filter(
+    (area) => !areasExcluidas.includes(area)
+  );
+
+  res.render("empleado/editarEmpleado", {
+    modalMessage: message,
+    modalType: "error",
+    modalTitle: "Error",
+    empleado: { _id: id, ...data },
+    roles,
+    areas,
+  });
+};
+
+const eliminarEmpleado = async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
-    await EmpleadoModel.eliminarEmpleado(id);
-    res.redirect('/empleados');
+    const empleadoExistente = await Empleado.obtenerPorId(req.params.id);
+    if (!empleadoExistente || empleadoExistente.rol === "Médico") {
+      return res.redirect("/empleados");
+    }
+
+    await Empleado.eliminarEmpleado(req.params.id);
+    res.redirect("/empleados");
   } catch (error) {
-    const empleados = await EmpleadoModel.obtenerEmpleados();
-    res.render('empleados/empleados', { 
-      titulo: 'Lista de Empleados', 
-      empleados, 
-      mensajeError: error.message 
+    console.error(error);
+    const page = 1;
+    const perPage = 12;
+    const { empleados, totalPages } = await Empleado.listar(page, perPage);
+    res.render("empleado/empleados", {
+      empleados,
+      page,
+      totalPages,
+      dni: "",
+      modalMessage: "Error al eliminar empleado",
+      modalType: "error",
+      modalTitle: "Error",
     });
   }
-}
+};
 
-const empleadoController = {
+const crearEmpleadoInterno = async (data) => {
+  const empleadoExistente = await Empleado.obtenerPorDni(data.dni);
+  if (empleadoExistente) {
+    return { ok: false, message: "Ya existe un empleado con ese DNI" };
+  }
+
+  const empleadoData = {
+    ...data,
+    rol: "Médico",
+    area: "Atención Médica",
+  };
+
+  await Empleado.crearEmpleado(empleadoData);
+  return { ok: true };
+};
+
+const actualizarEmpleadoInterno = async (medicoId, data) => {
+  const medico = await MedicoController.obtenerMedicoPorId(medicoId);
+  if (!medico) throw new Error("Médico no encontrado");
+
+  const empleadoExistente = await Empleado.obtenerPorDni(medico.dni);
+  if (!empleadoExistente) throw new Error("Empleado no encontrado");
+
+  const empleadoData = {
+    ...data,
+    rol: "Médico",
+    area: "Atención Médica",
+  };
+
+  await Empleado.actualizarEmpleado(empleadoExistente._id, empleadoData);
+  return true;
+};
+
+const eliminarEmpleadoInterno = async (medicoId) => {
+  const medico = await MedicoController.obtenerMedicoPorId(medicoId);
+  if (!medico) throw new Error("Médico no encontrado");
+
+  const empleadoExistente = await Empleado.obtenerPorDni(medico.dni);
+  if (!empleadoExistente) throw new Error("Empleado no encontrado");
+
+  await Empleado.eliminarEmpleado(empleadoExistente._id);
+  return true;
+};
+
+const obtenerPorDni = async (dni) => {
+  if (!dni || dni.trim() === "") {
+    return null;
+  }
+
+  const empleado = await Empleado.obtenerPorDni(dni);
+  return empleado || null;
+};
+
+export default {
   mostrarEmpleados,
   formularioNuevoEmpleado,
   guardarEmpleado,
+  formularioEditarEmpleado,
   actualizarEmpleado,
   eliminarEmpleado,
-  formularioEditarEmpleado
+  crearEmpleadoInterno,
+  actualizarEmpleadoInterno,
+  eliminarEmpleadoInterno,
+  obtenerPorDni,
 };
-
-export default empleadoController;
