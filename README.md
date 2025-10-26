@@ -14,26 +14,20 @@
 - [Creadores](#creadores)
 - [Links](#links)
 
-## Functionamiento
+## Funcionamiento
 
-El usuario accede a la aplicación que redirige automáticamente a la página de tareas. La navegación se realiza a través de un menú superior que permite alternar entre gestión de empleados y tareas. Las operaciones CRUD se realizan mediante formularios web con validación en tiempo real, y los datos se persisten en archivos JSON. A su vez, el sistema proporciona endpoints API REST para realizar peticiones mediante el uso de software como Postman.
+MediTech es un sistema de gestión clínica diseñado como una solución de backend integral, cuyo objetivo es digitalizar y centralizar la administración de una clínica médica. El sistema aborda la necesidad de gestionar de manera eficiente las operaciones críticas, incluyendo la administración del personal (médico y administrativo), el manejo completo de la información de pacientes, la gestión de turnos médicos y citas, así como la organización de tareas administrativas. Además, el sistema mantiene catálogos maestros para especialidades médicas y coberturas de salud.
 
-Se utilizó Node.js con módulos ES6, archivos JSON de base de datos, Express.js para el servidor web, Pug como motor de plantillas y Bootstrap para la interfaz responsiva. Implementando patrones MVC, código modular y manejo de errores como validaciones de datos.
-
+El sistema se basa en una arquitectura monolítica que implementa rigurosamente el patrón MVC (Model-View-Controller) para asegurar una clara separación de responsabilidades. El backend está construido utilizando Node.js con el framework Express.js, y se apoya en MongoDB Atlas como su base de datos NoSQL. Para la visualización, utiliza Pug como motor de plantillas, lo que permite el renderizado de vistas directamente desde el servidor. La gestión de datos se facilita mediante el ODM Mongoose, y todo el código se estructura con Módulos ES6 (import/export) para mejorar la modularidad y el mantenimiento.
 
 ## Creadores
 
 **Avalos, Santiago Germán**
 
-**Hadziconstanti, Aixa**
-
 **Paguaga, Santiago Noel**
-
-**Verdejo de Rodt, Ivanna Agostina**
 
 **Verón, Mirta**
 
 ## Links
 
 - [Repositorio GitHub](https://github.com/SantiagoNoelPaguaga/MediTech-Backend)
-- [Colección Postman](https://santiago-avalos-8841143.postman.co/workspace/Santiago-Avalos's-Workspace~3ad755b5-4cdc-47e7-8d21-7a0b720f5c91/collection/48629759-dad5d465-9bdd-4c8f-91cf-48e6b70f1d70?action=share&creator=48629759)
