@@ -79,6 +79,41 @@ turnoSchema.statics.listar = async function (
   return { turnos, totalPages };
 };
 
+turnoSchema.statics.listarPorMedico = async function (
+  medicoId,
+  page = 1,
+  perPage = 12,
+  dni = "",
+  fecha = "",
+) {
+  let filter = { medicoId };
+
+  if (dni) {
+    filter.dniPaciente = { $regex: dni, $options: "i" };
+  }
+
+  if (fecha) {
+    const date = new Date(fecha);
+    const startOfDay = date;
+    const endOfDay = new Date(date);
+    endOfDay.setDate(date.getDate() + 1);
+
+    filter.fecha = {
+      $gte: startOfDay,
+      $lt: endOfDay,
+    };
+  }
+
+  const total = await this.countDocuments(filter);
+  const totalPages = Math.ceil(total / perPage);
+  const turnos = await this.find(filter)
+    .skip((page - 1) * perPage)
+    .limit(perPage)
+    .lean();
+
+  return { turnos, totalPages };
+};
+
 turnoSchema.statics.crearTurno = async function (data) {
   const turno = new this(data);
   return turno.save();
