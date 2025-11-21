@@ -89,8 +89,10 @@ const guardarMedico = async (req, res) => {
     });
   }
 
+  let resultadoEmpleado;
+
   try {
-    const resultadoEmpleado = await EmpleadoController.crearEmpleadoInterno({
+    resultadoEmpleado = await EmpleadoController.crearEmpleadoInterno({
       nombre: data.nombre,
       apellido: data.apellido,
       dni: data.dni,
@@ -122,7 +124,19 @@ const guardarMedico = async (req, res) => {
       especialidades: especialidadesSeleccionadas,
     });
 
-    res.redirect("/medicos");
+    const passwordGenerada = resultadoEmpleado.initialPassword;
+
+    return res.render("medico/nuevoMedico", {
+      modalMessage:
+        "Médico creado correctamente.\n\n" +
+        "Contraseña inicial: " +
+        passwordGenerada +
+        "\n\nIMPORTANTE: debe cambiarla en su primer ingreso.",
+      modalType: "success",
+      modalTitle: "Médico Creado",
+      especialidades: especialidadesDisponibles,
+      formData: {},
+    });
   } catch (error) {
     console.error(error);
     let message = "Error al guardar médico";
