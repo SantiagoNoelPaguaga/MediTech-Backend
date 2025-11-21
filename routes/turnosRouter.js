@@ -1,28 +1,84 @@
 import express from "express";
+import { authenticateToken } from "../middlewares/authMiddleware.js";
+import { authorizeRole } from "../middlewares/authorizeMiddleware.js";
+import { turnoMiddleware } from "../middlewares/turnoMiddleware.js";
 import turnoController from "../controllers/turnoController.js";
 
 const router = express.Router();
 
-router.get("/", turnoController.mostrarTurnos);
+router.get(
+  "/",
+  authenticateToken,
+  authorizeRole("Administrador", "Médico"),
+  turnoController.mostrarTurnos,
+);
 
-router.get("/new", turnoController.formularioNuevoTurno);
-router.post("/new", turnoController.guardarTurno);
+router.get(
+  "/new",
+  authenticateToken,
+  authorizeRole("Administrador"),
+  turnoController.formularioNuevoTurno,
+);
 
-router.get("/edit/:id", turnoController.formularioEditarTurno);
-router.put("/edit/:id", turnoController.actualizarTurno);
+router.post(
+  "/new",
+  authenticateToken,
+  authorizeRole("Administrador"),
+  turnoController.guardarTurno,
+);
 
-router.delete("/delete/:id", turnoController.eliminarTurno);
+router.get(
+  "/edit/:id",
+  authenticateToken,
+  turnoMiddleware.loadTurno,
+  turnoController.formularioEditarTurno,
+);
 
-router.get("/buscar", turnoController.buscarPorIdForm);
+router.put(
+  "/edit/:id",
+  authenticateToken,
+  turnoMiddleware.loadTurno,
+  turnoMiddleware.canEditTurno,
+  turnoController.actualizarTurno,
+);
 
-router.get("/paciente", turnoController.buscarPacientePorIdForm);
+router.delete(
+  "/delete/:id",
+  authenticateToken,
+  authorizeRole("Administrador"),
+  turnoController.eliminarTurno,
+);
 
-router.get("/api/medicos", turnoController.obtenerMedicosAPI);
+router.get("/buscar", authenticateToken, turnoController.buscarPorIdForm);
 
-router.get("/api/especialidades", turnoController.obtenerEspecialidadesAPI);
+router.get(
+  "/paciente",
+  authenticateToken,
+  turnoController.buscarPacientePorIdForm,
+);
 
-router.get("/api/tipo-turnos", turnoController.obtenerTipoTurnosAPI);
+router.get(
+  "/api/medicos",
+  authenticateToken,
+  turnoController.obtenerMedicosAPI,
+);
 
-router.get("/api/estudios-medicos", turnoController.obtenerEstudioMedicosAPI);
+router.get(
+  "/api/especialidades",
+  authenticateToken,
+  turnoController.obtenerEspecialidadesAPI,
+);
+
+router.get(
+  "/api/tipo-turnos",
+  authenticateToken,
+  turnoController.obtenerTipoTurnosAPI,
+);
+
+router.get(
+  "/api/estudios-medicos",
+  authenticateToken,
+  turnoController.obtenerEstudioMedicosAPI,
+);
 
 export default router;
