@@ -11,104 +11,63 @@ block content
   form#formEditarTarea(action=`/tareas/edit/${tarea._id}` method="POST")
     input(type="hidden" name="_method" value="PUT")
 
-    .dni-busqueda
-      label(for="dniEmpleado") DNI del Empleado
-      .input-group
-        input#dniEmpleado(
-          type="text"
-          name="dniEmpleado"
-          placeholder="Ingrese DNI del empleado"
-          value=(tarea.dniEmpleado || '')
-        )
-        button#btnBuscarEmpleado(type="button") Buscar
+    if user.rol === "Administrador"
+      .dni-busqueda
+        label(for="dniEmpleado") DNI del Empleado
+        .input-group
+          input#dniEmpleado(type="text" name="dniEmpleado" value=(tarea.dniEmpleado || ''))
+          button#btnBuscarEmpleado(type="button") Buscar
 
-    #infoEmpleado.card(style="display:none;")
-      h4 Información del Empleado
-      p
-        strong Nombre:
-        | 
-        span#nombreEmpleado
-      p
-        strong Apellido:
-        | 
-        span#apellidoEmpleado
-      p 
-        strong Rol: 
-        | 
-        span#rolEmpleado
-      p 
-        strong Área: 
-        | 
-        span#areaEmpleado
+      #infoEmpleado.card(style="display:none;")
+        h4 Información del Empleado
+        p
+          strong Nombre:
+          span#nombreEmpleado
+        p
+          strong Apellido:
+          span#apellidoEmpleado
+        p
+          strong Rol:
+          span#rolEmpleado
+        p
+          strong Área:
+          span#areaEmpleado
 
-      input#empleadoHidden(type="hidden" name="empleado" value=tarea.empleado)
-      input#areaHidden(type="hidden" name="area" value=tarea.area)
-      input#nombreEmpleadoHidden(type="hidden" name="nombreEmpleado" value=tarea.nombreEmpleado)
-      input#apellidoEmpleadoHidden(type="hidden" name="apellidoEmpleado" value=tarea.apellidoEmpleado)
-      input#rolEmpleadoHidden(type="hidden" name="rolEmpleado" value=tarea.rolEmpleado)
+        input#empleadoHidden(type="hidden" name="empleado" value=tarea.empleado)
+        input#areaHidden(type="hidden" name="area" value=tarea.area)
 
-    .dni-busqueda#dniPacienteDiv(style="display:none;")
-      label(for="dniPaciente") DNI del Paciente
-      .input-group
-        input#dniPaciente(
-          type="text"
-          name="dniPaciente"
-          placeholder="Ingrese DNI del paciente"
-          value=(tarea.dniPaciente || '')
-        )
-        button#btnBuscarPaciente(type="button") Buscar
-
-    #infoPaciente.card(style="display:none;")
-      h4 Información del Paciente
-      p 
-        strong Nombre completo:
-        |  
-        span#nombrePaciente
-
-      input#pacienteHidden(type="hidden" name="pacienteId" value=tarea.pacienteId)
-      input#nombrePacienteHidden(type="hidden" name="pacienteNombre" value=tarea.nombrePaciente)
-
-    #camposTarea(style="display:none;")
-
-      #proveedorDiv
-        label(for="proveedor") Proveedor
-        select#proveedor(name="proveedor")
-          option(value="" disabled selected) Seleccione proveedor
-          each proveedor in (proveedores || [])
-            option(value=proveedor selected=(tarea.proveedor === proveedor))= proveedor
+      label(for="proveedor") Proveedor
+      select#proveedor(name="proveedor")
+        each proveedor in proveedores
+          option(value=proveedor selected=(proveedor === tarea.proveedor))= proveedor
 
       label(for="titulo") Título
       select#titulo(name="titulo")
-        option(value="" disabled selected) Seleccione un título
+        option(value="" disabled) Seleccione un título
 
       label(for="descripcion") Descripción
       textarea#descripcion(name="descripcion" rows="3")= tarea.descripcion
 
-      label(for="estado") Estado
-      select#estado(name="estado" required)
-        each estado in ["PENDIENTE", "EN CURSO", "COMPLETADA", "CANCELADA"]
-          option(value=estado selected=(tarea.estado === estado))= estado
-
       label(for="prioridad") Prioridad
-      select#prioridad(name="prioridad" required)
-        each prioridad in ["BAJA", "MEDIA", "ALTA"]
-          option(value=prioridad selected=(tarea.prioridad === prioridad))= prioridad
+      select#prioridad(name="prioridad")
+        each p in ["BAJA","MEDIA","ALTA"]
+          option(value=p selected=(tarea.prioridad === p))= p
 
-      - var fechaInicioInput = tarea.fechaInicio ? tarea.fechaInicio.split('T')[0] : ''
       label(for="fechaInicio") Fecha de inicio
-      input#fechaInicio(type="date" name="fechaInicio" value=fechaInicioInput)
+      input#fechaInicio(type="date" name="fechaInicio" value=(tarea.fechaInicio ? tarea.fechaInicio.split('T')[0] : ''))
 
-      - var fechaFinInput = tarea.fechaFin ? tarea.fechaFin.split('T')[0] : ''
       label(for="fechaFin") Fecha de fin
-      input#fechaFin(type="date" name="fechaFin" value=fechaFinInput)
+      input#fechaFin(type="date" name="fechaFin" value=(tarea.fechaFin ? tarea.fechaFin.split('T')[0] : ''))
 
-      label(for="observaciones") Observaciones
-      textarea#observaciones(name="observaciones" rows="3")= tarea.observaciones
+    label(for="estado") Estado
+    select#estado(name="estado")
+      each e in ["PENDIENTE","EN CURSO","COMPLETADA","CANCELADA"]
+        option(value=e selected=(tarea.estado === e))= e
 
-      button(type="submit") Actualizar Tarea
+    label(for="observaciones") Observaciones
+    textarea#observaciones(name="observaciones" rows="3")= tarea.observaciones
 
-  if modalMessage
-    +Modal('modalGeneric', modalTitle, modalMessage, modalType)
+    button(type="submit") Actualizar Tarea
 
 block scripts
   script.

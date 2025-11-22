@@ -131,12 +131,23 @@ const mostrarTareas = async (req, res) => {
     const perPage = 10;
     const filtros = req.query || {};
 
-    const { tareas, totalPages } = await Tarea.listar(page, perPage, filtros);
+    let resultado;
+
+    if (req.user.rol === "Administrador") {
+      resultado = await Tarea.listar(page, perPage, filtros);
+    } else {
+      resultado = await Tarea.listarPorEmpleado(
+        req.user.id,
+        page,
+        perPage,
+        filtros,
+      );
+    }
 
     res.render("tarea/tareas", {
-      tareas,
+      tareas: resultado.tareas,
       page,
-      totalPages,
+      totalPages: resultado.totalPages,
       filtros,
       dni: req.query.dni || "",
       modalMessage: null,
@@ -145,6 +156,7 @@ const mostrarTareas = async (req, res) => {
     });
   } catch (error) {
     console.error("Error al listar tareas:", error);
+
     res.render("tarea/tareas", {
       tareas: [],
       page: 1,
@@ -259,7 +271,9 @@ const actualizarTarea = async (req, res) => {
   try {
     const dataRaw = req.body;
     const tareaData = normalizarDatosTarea(dataRaw);
-    const errorValidacion = validarCampos(tareaData);
+
+    const isAdmin = req.user && req.user.rol === "Administrador";
+    const errorValidacion = isAdmin ? validarCampos(tareaData) : null;
 
     if (errorValidacion) {
       const tareaCompleta = {
