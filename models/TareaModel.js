@@ -81,6 +81,30 @@ tareaSchema.statics.listar = async function (
   return { tareas, totalPages };
 };
 
+tareaSchema.statics.listarPorEmpleado = async function (
+  empleadoId,
+  page = 1,
+  perPage = 10,
+  filtros = {},
+) {
+  const filter = { empleado: empleadoId };
+
+  if (filtros.estado) filter.estado = filtros.estado;
+  if (filtros.prioridad) filter.prioridad = filtros.prioridad;
+
+  const total = await this.countDocuments(filter);
+  const totalPages = Math.ceil(total / perPage);
+
+  const tareas = await this.find(filter)
+    .populate("empleado", "nombre apellido dni rol area")
+    .populate("paciente", "nombre apellido dni")
+    .skip((page - 1) * perPage)
+    .limit(perPage)
+    .lean();
+
+  return { tareas, totalPages };
+};
+
 tareaSchema.statics.crearTarea = async function (data) {
   const tarea = new this(data);
   return tarea.save();
