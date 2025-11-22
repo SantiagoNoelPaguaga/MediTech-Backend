@@ -1,16 +1,50 @@
 import express from "express";
 import medicoController from "../controllers/medicoController.js";
+import { authenticateToken } from "../middlewares/authMiddleware.js";
+import { authorizeRole } from "../middlewares/authorizeMiddleware.js";
 
 const router = express.Router();
 
-router.get("/", medicoController.mostrarMedicos);
+router.get(
+  "/",
+  authenticateToken,
+  authorizeRole("Administrador"),
+  medicoController.mostrarMedicos,
+);
 
-router.get("/new", medicoController.formularioNuevoMedico);
-router.post("/new", medicoController.guardarMedico);
+router.get(
+  "/new",
+  authenticateToken,
+  authorizeRole("Administrador"),
+  medicoController.formularioNuevoMedico,
+);
 
-router.get("/edit/:id", medicoController.formularioEditarMedico);
-router.put("/edit/:id", medicoController.actualizarMedico);
+router.post(
+  "/new",
+  authenticateToken,
+  authorizeRole("Administrador"),
+  medicoController.guardarMedico,
+);
 
-router.delete("/delete/:id", medicoController.eliminarMedico);
+router.get(
+  "/edit/:id",
+  authenticateToken,
+  authorizeRole("Administrador"),
+  medicoController.formularioEditarMedico,
+);
+
+router.put(
+  "/edit/:id",
+  authenticateToken,
+  authorizeRole("Administrador"),
+  medicoController.actualizarMedico,
+);
+
+router.delete(
+  "/delete/:id",
+  authenticateToken,
+  authorizeRole("Administrador"),
+  medicoController.eliminarMedico,
+);
 
 export default router;
