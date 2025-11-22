@@ -1,0 +1,79 @@
+extends ../layout.pug
+include ../mixin/title.pug
+include ../mixin/modal.pug
+
+block head
+    link(rel="stylesheet" href="/stylesheets/perfil/perfil.css")
+
+block content
+    if modalMessage
+        +Modal('modalPerfil', modalTitle, modalMessage, modalType)
+
+    +SectionTitle('MI PERFIL')
+
+    .perfil-container
+        .perfil-header
+            a(href="/auth/cambiarPassword").btn-change-password Cambiar Contraseña
+
+        .perfil-card
+            .perfil-section
+                .perfil-field
+                    label Nombre:
+                    p.perfil-value= usuario.nombre
+                .perfil-field
+                    label Apellido:
+                    p.perfil-value= usuario.apellido
+
+            .perfil-section
+                .perfil-field
+                    label DNI:
+                    p.perfil-value= usuario.dni
+                if !esMedico
+                    .perfil-field
+                        label Rol:
+                        p.perfil-value= usuario.rol
+                if esMedico
+                    .perfil-field
+                        label Matrícula:
+                        p.perfil-value= usuario.matricula
+
+            if !esMedico
+                .perfil-section
+                    .perfil-field
+                        label Área:
+                        p.perfil-value= usuario.area
+                    .perfil-field
+                        label Miembro desde:
+                        if usuario.createdAt
+                            p.perfil-value= new Date(usuario.createdAt).toLocaleDateString('es-ES')
+                        else
+                            p.perfil-value N/A
+
+            if esMedico
+                .perfil-section
+                    .perfil-field
+                        label Teléfono:
+                        p.perfil-value= usuario.telefono || 'N/A'
+                    .perfil-field
+                        label Email:
+                        p.perfil-value= usuario.email || 'N/A'
+
+                .perfil-section
+                    .perfil-field
+                        label Domicilio:
+                        p.perfil-value= usuario.domicilio || 'N/A'
+                    .perfil-field
+                        label Especialidades:
+                        p.perfil-value= usuario.especialidades && usuario.especialidades.length > 0 ? usuario.especialidades.join(', ') : 'N/A'
+
+                .perfil-section
+                    .perfil-field
+                        label Miembro desde:
+                        if usuario.createdAt
+                            p.perfil-value= new Date(usuario.createdAt).toLocaleDateString('es-ES')
+                        else
+                            p.perfil-value N/A
+
+            .perfil-actions
+                a(href="/perfil/editar").btn-primary Modificar Datos
+                a(href="/index").btn-secondary Volver
