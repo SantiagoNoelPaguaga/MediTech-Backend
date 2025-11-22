@@ -12,7 +12,7 @@ describe("GET /empleados", () => {
     token = jwt.sign(
       {
         id: "test-user-id",
-        rol: "Medico",
+        rol: "Administrador",
       },
       process.env.SECRET,
       { expiresIn: "1h" },
