@@ -4,6 +4,7 @@ import MedicoController from "../controllers/medicoController.js";
 import EspecialidadController from "../controllers/especialidadController.js";
 import TipoTurnoController from "../controllers/tipoTurnoController.js";
 import EstudioMedicoController from "../controllers/estudioMedicoController.js";
+import Medico from "../models/MedicoModel.js";
 
 const validarCampos = (data) => {
   const requiredFields = [
@@ -39,16 +40,50 @@ const mostrarTurnos = async (req, res) => {
     const dni = req.query.dni || "";
     const fecha = req.query.fecha || "";
 
-    const { turnos, totalPages } = await Turno.listar(
-      page,
-      perPage,
-      dni,
-      fecha,
-    );
+    let resultado;
+
+    if (req.user.rol === "Administrador") {
+      resultado = await Turno.listar(page, perPage, dni, fecha);
+    } else if (req.user.rol === "Médico") {
+      const medico = await Medico.findOne({ dni: req.user.dni }).lean();
+
+      if (!medico) {
+        return res.render("turno/turnos", {
+          turnos: [],
+          page: 1,
+          totalPages: 1,
+          dni: "",
+          fecha: "",
+          modalMessage: "No se encontró información del médico",
+          modalType: "warning",
+          modalTitle: "Información",
+        });
+      }
+
+      resultado = await Turno.listarPorMedico(
+        medico._id,
+        page,
+        perPage,
+        dni,
+        fecha,
+      );
+    } else {
+      return res.status(403).render("turno/turnos", {
+        turnos: [],
+        page: 1,
+        totalPages: 1,
+        dni: "",
+        fecha: "",
+        modalMessage: "No tienes permiso para ver turnos",
+        modalType: "error",
+        modalTitle: "Acceso denegado",
+      });
+    }
+
     res.render("turno/turnos", {
-      turnos,
+      turnos: resultado.turnos,
       page,
-      totalPages,
+      totalPages: resultado.totalPages,
       dni,
       fecha,
       modalMessage: null,
@@ -62,6 +97,7 @@ const mostrarTurnos = async (req, res) => {
       page: 1,
       totalPages: 1,
       dni: "",
+      fecha: "",
       modalMessage: "Error al cargar turnos",
       modalType: "error",
       modalTitle: "Error",
@@ -177,7 +213,8 @@ const actualizarTurno = async (req, res) => {
     nombreMedico: rawData.medico ? rawData.medico.nombre : undefined,
   };
 
-  const errorValidacion = validarCampos(data);
+  const isAdmin = req.user && req.user.rol === "Administrador";
+  const errorValidacion = isAdmin ? validarCampos(data) : null;
 
   if (errorValidacion) {
     return res.render("turno/editarTurno", {

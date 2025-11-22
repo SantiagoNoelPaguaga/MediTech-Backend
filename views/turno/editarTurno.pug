@@ -10,81 +10,82 @@ block content
 
     form(id="formTurno" action=`/turnos/edit/${turno._id}` method="POST")
         input(type="hidden" name="_method" value="PUT")
-        
-        label(for="dniPaciente") DNI del Paciente
-        .dni-busqueda
+
+        if user && user.rol === "Administrador"
+            label(for="dniPaciente") DNI del Paciente
+            .dni-busqueda
+                input(
+                    type="text"
+                    name="paciente[dni]"
+                    id="dniPaciente"
+                    placeholder="Ingrese el DNI"
+                    required
+                    value=(formData && formData.paciente && formData.paciente.dni || turno.dniPaciente || '')
+                )
+                button(type="button" id="btnBuscarPaciente") Buscar
+
+            input(
+                type="hidden"
+                name="paciente[id]"
+                id="idPaciente"
+                value=(formData && formData.paciente && formData.paciente.id || turno.pacienteId || '')
+            )
+
+            label(for="nombrePaciente") Nombre del Paciente
             input(
                 type="text"
-                name="paciente[dni]"
-                id="dniPaciente"
-                placeholder="Ingrese el DNI"
-                required
-                value=(formData && formData.paciente && formData.paciente.dni || turno.dniPaciente || '')
+                name="paciente[nombre]"
+                id="nombrePaciente"
+                readonly
+                value=(formData && formData.paciente && formData.paciente.nombre || turno.nombrePaciente || '')
             )
-            button(type="button" id="btnBuscarPaciente") Buscar
 
-        input(
-            type="hidden"
-            name="paciente[id]"
-            id="idPaciente"
-            value=(formData && formData.paciente && formData.paciente.id || turno.pacienteId || '')
-        )
+            input(
+                type="datetime-local"
+                name="fecha"
+                id="fecha"
+                required
+                value=(formData && formData.fecha || turno.fechaFormatted || '')
+            )
 
-        label(for="nombrePaciente") Nombre del Paciente
-        input(
-            type="text"
-            name="paciente[nombre]"
-            id="nombrePaciente"
-            readonly
-            value=(formData && formData.paciente && formData.paciente.nombre || turno.nombrePaciente || '')
-        )
+            - const currentTipoTurno = formData && formData.tipoTurno ? formData.tipoTurno : turno.tipoTurno
+            label(for="tipoTurno") Tipo de Turno
+            select(
+                name="tipoTurno" 
+                id="tipoTurno" 
+                required
+                data-preselected=currentTipoTurno
+            )
+                option(value="" selected disabled) Seleccione un tipo
 
-        input(
-            type="datetime-local"
-            name="fecha"
-            id="fecha"
-            required
-            value=(formData && formData.fecha || turno.fechaFormatted || '')
-        )
+            - const currentDescripcion = formData && formData.descripcion ? formData.descripcion : turno.descripcion
+            label(for="descripcion") Descripción
+            select(
+                name="descripcion" 
+                id="descripcion"
+                data-preselected=currentDescripcion
+            )
+                if currentDescripcion
+                    option(value=currentDescripcion selected)= currentDescripcion
+                else
+                    option(value="" selected disabled) Seleccione una opción
 
-        - const currentTipoTurno = formData && formData.tipoTurno ? formData.tipoTurno : turno.tipoTurno
-        label(for="tipoTurno") Tipo de Turno
-        select(
-            name="tipoTurno" 
-            id="tipoTurno" 
-            required
-            data-preselected=currentTipoTurno
-        )
-            option(value="" selected disabled) Seleccione un tipo
+            - const currentMedicoId = formData && formData.medico && formData.medico.id ? formData.medico.id : turno.medicoId
+            - const currentNombreMedico = formData && formData.medico && formData.medico.nombre ? formData.medico.nombre : turno.nombreMedico
 
-        - const currentDescripcion = formData && formData.descripcion ? formData.descripcion : turno.descripcion
-        label(for="descripcion") Descripción
-        select(
-            name="descripcion" 
-            id="descripcion"
-            data-preselected=currentDescripcion
-        )
-            if currentDescripcion
-                option(value=currentDescripcion selected)= currentDescripcion
-            else
-                option(value="" selected disabled) Seleccione una opción
+            label(for="medicoId") Médico
+            select(name="medico[id]" id="medicoId")
+                if currentMedicoId && currentNombreMedico
+                    option(value=currentMedicoId selected) #{currentNombreMedico}
+                else
+                    option(value="" selected disabled) Seleccione un médico
 
-        - const currentMedicoId = formData && formData.medico && formData.medico.id ? formData.medico.id : turno.medicoId
-        - const currentNombreMedico = formData && formData.medico && formData.medico.nombre ? formData.medico.nombre : turno.nombreMedico
-        
-        label(for="medicoId") Médico
-        select(name="medico[id]" id="medicoId")
-            if currentMedicoId && currentNombreMedico
-                option(value=currentMedicoId selected) #{currentNombreMedico}
-            else
-                option(value="" selected disabled) Seleccione un médico
-
-        input(
-            type="hidden"
-            name="medico[nombre]"
-            id="nombreMedico"
-            value=currentNombreMedico || ''
-        )
+            input(
+                type="hidden"
+                name="medico[nombre]"
+                id="nombreMedico"
+                value=currentNombreMedico || ''
+            )
 
         - const currentEstado = formData && formData.estado ? formData.estado : turno.estado
         label(for="estado") Estado

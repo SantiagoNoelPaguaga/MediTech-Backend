@@ -9,24 +9,32 @@ block content
     +SectionTitle('CLÍNICA SALUD')
 
     section#welcome
-        h2 Bienvenido al panel de administración
+        h2 Bienvenido al dashboard
         p Selecciona una opción del menú para comenzar
 
     section#modulos
         h2 Módulos
         .cards
-            .card
-                h3 Empleados
-                button(onclick="window.location='/empleados'") Ir
-            .card
-                h3 Médicos
-                button(onclick="window.location='/medicos'") Ir
-            .card
-                h3 Pacientes
-                button(onclick="window.location='/pacientes'") Ir
-            .card
-                h3 Turnos
-                button(onclick="window.location='/turnos'") Ir
-            .card
-                h3 Tareas
-                button(onclick="window.location='/tareas'") Ir
+            if user && user.rol === 'Administrador'
+                .card
+                    h3 Empleados
+                    button(onclick="window.location='/empleados'") Ir
+                .card
+                    h3 Médicos
+                    button(onclick="window.location='/medicos'") Ir
+                .card
+                    h3 Pacientes
+                    button(onclick="window.location='/pacientes'") Ir
+
+            if user && (user.rol === 'Administrador' || user.rol === 'Médico')
+                .card
+                    h3 Turnos
+                    button(onclick="window.location='/turnos'") Ir
+                .card
+                    h3 Tareas
+                    button(onclick="window.location='/tareas'") Ir
+
+            if user && (user.rol === 'Recepcionista' || user.rol === 'Encargado de Stock')
+                .card
+                    h3 Tareas
+                    button(onclick="window.location='/tareas'") Ir
