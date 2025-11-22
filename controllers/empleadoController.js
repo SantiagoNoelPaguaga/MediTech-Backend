@@ -1,5 +1,7 @@
 import Empleado from "../models/EmpleadoModel.js";
 import MedicoController from "./medicoController.js";
+import bcrypt from "bcryptjs";
+import { generarPassword } from "../utils/passwordGenerator.js";
 
 const validarCampos = (data) => {
   const requiredFields = ["nombre", "apellido", "dni", "rol", "area"];
@@ -94,8 +96,41 @@ const guardarEmpleado = async (req, res) => {
   }
 
   try {
-    await Empleado.crearEmpleado(data);
-    res.redirect("/empleados");
+    const initialPassword = generarPassword();
+    const saltRounds = 10;
+    const passwordHash = await bcrypt.hash(initialPassword, saltRounds);
+
+    const empleadoData = {
+      nombre: data.nombre,
+      apellido: data.apellido,
+      dni: data.dni,
+      rol: data.rol,
+      area: data.area,
+      passwordHash: passwordHash,
+      mustChangePassword: true,
+    };
+
+    await Empleado.crearEmpleado(empleadoData);
+
+    const roles = Empleado.obtenerRoles().filter(
+      (rol) => !rolesExcluidos.includes(rol),
+    );
+    const areas = Empleado.obtenerAreas().filter(
+      (area) => !areasExcluidas.includes(area),
+    );
+
+    return res.render("empleado/nuevoEmpleado", {
+      formData: {},
+      roles,
+      areas,
+      modalMessage:
+        "Empleado creado correctamente.\n\n" +
+        "Contraseña inicial: " +
+        initialPassword +
+        "\n\nIMPORTANTE: debe cambiarla en su primer ingreso.",
+      modalType: "info",
+      modalTitle: "Contraseña inicial",
+    });
   } catch (error) {
     console.error(error);
     let message = "Error al guardar empleado";
@@ -223,14 +258,19 @@ const crearEmpleadoInterno = async (data) => {
     return { ok: false, message: "Ya existe un empleado con ese DNI" };
   }
 
+  const initialPassword = generarPassword();
+  const passwordHash = await bcrypt.hash(initialPassword, 10);
+
   const empleadoData = {
     ...data,
     rol: "Médico",
     area: "Atención Médica",
+    passwordHash,
+    mustChangePassword: true,
   };
 
   await Empleado.crearEmpleado(empleadoData);
-  return { ok: true };
+  return { ok: true, initialPassword };
 };
 
 const actualizarEmpleadoInterno = async (medicoId, data) => {
