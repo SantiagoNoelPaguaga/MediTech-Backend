@@ -15,6 +15,7 @@
   flex-direction: column;
   align-items: center;
   z-index: 20;
+  position: relative;
 }
 
 .sidebarContent {
@@ -22,6 +23,8 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
+  width: 100%;
+  flex: 1;
 }
 
 .logo {
@@ -33,6 +36,8 @@
   list-style: none;
   padding: 0;
   margin: 0;
+  width: 100%;
+  flex: 1;
 }
 
 .sidebarSection ul li a {
@@ -44,6 +49,56 @@
 
 .sidebarSection ul li a:hover {
   text-decoration: underline;
+}
+
+.sidebarSection ul li.separator {
+  flex: 1;
+  border: none;
+  padding: 0;
+}
+
+.logout-section {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  margin-top: auto;
+  position: absolute;
+  bottom: 1rem;
+  left: 0;
+  right: 0;
+  padding: 0 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.logout-section li a {
+  color: #333;
+  font-family: "Montserrat", sans-serif;
+  text-decoration: none;
+  font-size: 1.35rem;
+}
+
+.logout-section li a:hover {
+  text-decoration: underline;
+}
+
+.sidebarSection ul li.logout-item {
+  border-top: 1px solid #ddd;
+  padding-top: 1rem;
+  margin-top: auto;
+}
+
+.sidebarSection ul li.logout-item a {
+  color: #d32f2f;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sidebarSection ul li.logout-item a:hover {
+  color: #b71c1c;
 }
 
 .toggleButton {

@@ -2,17 +2,34 @@ button#openSidebar.hamburger ☰
 aside#sidebar.sidebarSection
   button#closeSidebar.toggleButton ×
   .sidebarContent
-    img.logo(src="/images/logo_clinica.jpeg", alt="Logo")
+    img.logo(src="/images/logo_clinica.jpeg" alt="Logo")
     ul
       li
-        a(href="/") Inicio
-      li
-        a(href="/empleados") Empleados
-      li
-        a(href="/medicos") Médicos
-      li
-        a(href="/pacientes") Pacientes
-      li
-        a(href="/turnos") Turnos
-      li
-        a(href="/tareas") Tareas
+        a(href="/index") Inicio
+
+      if user && user.rol === "Administrador"
+        li
+          a(href="/empleados") Empleados
+        li
+          a(href="/medicos") Médicos
+        li
+          a(href="/pacientes") Pacientes
+
+      if user && (user.rol === "Administrador" || user.rol === "Médico")
+        li
+          a(href="/turnos") Turnos
+        li
+          a(href="/tareas") Tareas
+
+      if user && (user.rol === "Recepcionista" || user.rol === "Encargado de Stock")
+        li
+          a(href="/tareas") Tareas
+
+      if user
+        li
+          a(href="/perfil") Mi Perfil
+
+    if user
+      ul.logout-section
+        li
+          a(href="/auth/logout") Cerrar sesión
