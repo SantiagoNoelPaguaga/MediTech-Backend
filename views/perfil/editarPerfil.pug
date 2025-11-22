@@ -1,0 +1,68 @@
+extends ../layout.pug
+include ../mixin/title.pug
+include ../mixin/modal.pug
+
+block head
+  link(rel="stylesheet" href="/stylesheets/perfil/perfil.css")
+
+block content
+  if modalMessage
+    +Modal('modalEditarPerfil', modalTitle, modalMessage, modalType)
+
+  +SectionTitle('EDITAR PERFIL')
+
+  form.perfil-edit-form(method="POST" action="/perfil/editar")
+    .perfil-form-group
+      label Nombre:
+      input(type="text" name="nombre" value=usuario.nombre required)
+
+    .perfil-form-group
+      label Apellido:
+      input(type="text" name="apellido" value=usuario.apellido required)
+
+    .perfil-form-group
+      label DNI:
+      input(type="text" value=usuario.dni disabled)
+      small (No editable)
+
+    if !esMedico
+      .perfil-form-group
+        label Rol:
+        input(type="text" value=usuario.rol disabled)
+        small (No editable)
+
+      .perfil-form-group
+        label Área:
+        input(type="text" value=usuario.area disabled)
+        small (No editable)
+
+    if esMedico
+      .perfil-form-group
+        label Matrícula:
+        input(type="text" value=usuario.matricula disabled)
+        small (No editable)
+
+      .perfil-form-group
+        label Teléfono:
+        input(type="tel" name="telefono" value=usuario.telefono || '')
+
+      .perfil-form-group
+        label Email:
+        input(type="email" name="email" value=usuario.email || '')
+
+      .perfil-form-group
+        label Domicilio:
+        input(type="text" name="domicilio" value=usuario.domicilio || '')
+
+      .perfil-form-group
+        label Especialidades
+        select(name="especialidades" id="especialidades" multiple)
+          each esp in especialidades
+            option(
+              value=esp.nombre
+              selected=(usuario && usuario.especialidades && usuario.especialidades.includes(esp.nombre))
+            )= esp.nombre
+
+    .perfil-actions-form
+      button.btn-submit(type="submit") Guardar Cambios
+      a(href="/perfil").btn-cancel Cancelar

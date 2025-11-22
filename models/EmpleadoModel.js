@@ -20,6 +20,8 @@ const empleadoSchema = new mongoose.Schema(
     dni: { type: String, required: true, unique: true },
     rol: { type: String, required: true, enum: ROLES },
     area: { type: String, required: true, enum: AREAS },
+    passwordHash: { type: String, required: true },
+    mustChangePassword: { type: Boolean, default: true },
   },
   { timestamps: true },
 );
@@ -51,6 +53,7 @@ empleadoSchema.statics.obtenerPorId = async function (id) {
 };
 
 empleadoSchema.statics.actualizarEmpleado = async function (id, data) {
+  delete data.passwordHash;
   return this.findByIdAndUpdate(id, data, { new: true });
 };
 
@@ -58,8 +61,16 @@ empleadoSchema.statics.eliminarEmpleado = async function (id) {
   return this.findByIdAndDelete(id);
 };
 
+empleadoSchema.statics.cambiarPassword = async function (id, newPasswordHash) {
+  return this.findByIdAndUpdate(
+    id,
+    { passwordHash: newPasswordHash, mustChangePassword: false },
+    { new: true },
+  );
+};
+
 empleadoSchema.statics.obtenerPorDni = async function (dni) {
-  return this.findOne({ dni }).lean();
+  return this.findOne({ dni });
 };
 
 empleadoSchema.statics.obtenerRoles = function () {
@@ -69,6 +80,15 @@ empleadoSchema.statics.obtenerRoles = function () {
 empleadoSchema.statics.obtenerAreas = function () {
   return AREAS;
 };
+
+empleadoSchema.set("toJSON", {
+  transform: (document, returnedObject) => {
+    returnedObject.id = returnedObject._id.toString();
+    delete returnedObject._id;
+    delete returnedObject.__v;
+    delete returnedObject.passwordHash;
+  },
+});
 
 const Empleado = mongoose.model("Empleado", empleadoSchema);
 
