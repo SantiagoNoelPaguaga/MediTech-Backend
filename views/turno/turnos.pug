@@ -8,15 +8,25 @@ block head
 block content
     +SectionTitle('LISTA DE TURNOS')
     .top-bar
-        a.btn-add(href="/turnos/new")
-            i(class="fas fa-calendar-plus")
-            |  Nuevo Turno
-        form.search-form(action="/turnos" method="GET")
-            input(type="text" name="dni" placeholder="Buscar por DNI..." value=dni || "")
-            input(type="date" name="fecha" value=fecha || "")
-            button(type="submit")
-                i(class="fas fa-search")
-                | Buscar
+        if user && user.rol === "Administrador"
+            a.btn-add(href="/turnos/new")
+                i(class="fas fa-calendar-plus")
+                |  Nuevo Turno
+
+        if user && user.rol === "Administrador"
+            form.search-form(action="/turnos" method="GET")
+                input(type="text" name="dni" placeholder="Buscar por DNI del paciente..." value=dni || "")
+                input(type="date" name="fecha" value=fecha || "")
+                button(type="submit")
+                    i(class="fas fa-search")
+                    | Buscar
+
+        if user && user.rol === "Médico"
+            form.search-form(action="/turnos" method="GET")
+                input(type="date" name="fecha" value=fecha || "")
+                button(type="submit")
+                    i(class="fas fa-search")
+                    | Buscar
     .cards-container
         if turnos.length
             each turno in turnos
@@ -43,10 +53,12 @@ block content
                     .card-actions
                         a(href=`/turnos/edit/${turno._id}`, title="Editar")
                             i.fas.fa-edit
-                        form(action=`/turnos/delete/${turno._id}` method="POST" class="delete-form")
-                            input(type="hidden" name="_method" value="DELETE")
-                            button(type="submit" title="Eliminar")
-                                i.fas.fa-trash
+
+                        if user && user.rol === "Administrador"
+                            form(action=`/turnos/delete/${turno._id}` method="POST" class="delete-form")
+                                input(type="hidden" name="_method" value="DELETE")
+                                button(type="submit" title="Eliminar")
+                                    i.fas.fa-trash
         else
             p.no-results No se encontraron turnos.
     if totalPages > 1
@@ -62,10 +74,6 @@ block content
                         i(class="fas fa-arrow-right fa-sm")
             span.page-info Página #{page} de #{totalPages}
     +Modal('confirmModal', 'Confirmar eliminación', '¿Estás seguro de que deseas eliminar este turno?', 'confirm')
-
-
-
-
 
 block scripts
     script(src="/javascripts/mixin/deleteModal.js")
