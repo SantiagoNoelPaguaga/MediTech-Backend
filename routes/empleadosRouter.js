@@ -1,16 +1,50 @@
 import express from "express";
 import empleadoController from "../controllers/empleadoController.js";
+import { authenticateToken } from "../middlewares/authMiddleware.js";
+import { authorizeRole } from "../middlewares/authorizeMiddleware.js";
 
 const router = express.Router();
 
-router.get("/", empleadoController.mostrarEmpleados);
+router.get(
+  "/",
+  authenticateToken,
+  authorizeRole("Administrador"),
+  empleadoController.mostrarEmpleados,
+);
 
-router.get("/new", empleadoController.formularioNuevoEmpleado);
-router.post("/new", empleadoController.guardarEmpleado);
+router.get(
+  "/new",
+  authenticateToken,
+  authorizeRole("Administrador"),
+  empleadoController.formularioNuevoEmpleado,
+);
 
-router.get("/edit/:id", empleadoController.formularioEditarEmpleado);
-router.put("/edit/:id", empleadoController.actualizarEmpleado);
+router.post(
+  "/new",
+  authenticateToken,
+  authorizeRole("Administrador"),
+  empleadoController.guardarEmpleado,
+);
 
-router.delete("/delete/:id", empleadoController.eliminarEmpleado);
+router.get(
+  "/edit/:id",
+  authenticateToken,
+  authorizeRole("Administrador"),
+  empleadoController.formularioEditarEmpleado,
+);
+
+router.put(
+  "/edit/:id",
+  authenticateToken,
+  authorizeRole("Administrador"),
+  empleadoController.actualizarEmpleado,
+);
+
+router.delete(
+  "/delete/:id",
+  authenticateToken,
+  authorizeRole("Administrador"),
+  empleadoController.eliminarEmpleado,
+);
 
 export default router;
