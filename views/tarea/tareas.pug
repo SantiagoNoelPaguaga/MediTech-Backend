@@ -9,26 +9,28 @@ block content
   +SectionTitle('LISTA DE TAREAS')
 
   .top-bar
-    a.btn-add(href="/tareas/new")
-      i(class="fas fa-plus-circle")
-      |  Nueva Tarea
+    if user && user.rol === "Administrador"
+      a.btn-add(href="/tareas/new")
+        i(class="fas fa-plus-circle")
+        |  Nueva Tarea
 
-    form.search-form(action="/tareas/filter" method="GET")
-      input(type="text" name="dni" placeholder="DNI de empleado" value=(dni || ""))
+    if user && user.rol === "Administrador"
+      form.search-form(action="/tareas/filter" method="GET")
+        input(type="text" name="dni" placeholder="DNI de empleado" value=(dni || ""))
 
-      select(name="estado")
-        option(value="") Todos los estados
-        each estado in ["PENDIENTE", "EN CURSO", "COMPLETADA", "CANCELADA"]
-          option(value=estado selected=(filtros.estado === estado))= estado
+        select(name="estado")
+          option(value="") Todos los estados
+          each estado in ["PENDIENTE", "EN CURSO", "COMPLETADA", "CANCELADA"]
+            option(value=estado selected=(filtros && filtros.estado === estado))= estado
 
-      select(name="prioridad")
-        option(value="") Todas las prioridades
-        each prioridad in ["BAJA", "MEDIA", "ALTA"]
-          option(value=prioridad selected=(filtros.prioridad === prioridad))= prioridad
+        select(name="prioridad")
+          option(value="") Todas las prioridades
+          each prioridad in ["BAJA", "MEDIA", "ALTA"]
+            option(value=prioridad selected=(filtros && filtros.prioridad === prioridad))= prioridad
 
-      button(type="submit")
-        i(class="fas fa-search")
-        | Buscar
+        button(type="submit")
+          i(class="fas fa-search")
+          | Buscar
 
   .cards-container
     if tareas && tareas.length
@@ -45,74 +47,90 @@ block content
                   | #{tarea.empleado.nombre} #{tarea.empleado.apellido} (DNI: #{tarea.empleado.dni || 'N/A'})
                 else
                   | N/A
+
               p
                 strong Paciente:
                 if tarea.paciente
-                  | #{tarea.paciente.nombre} #{tarea.paciente.apellido} (DNI: #{tarea.paciente.dni})
+                  | #{tarea.paciente.nombre} #{tarea.paciente.apellido} (DNI: #{tarea.paciente.dni || 'N/A'})
                 else
                   | N/A
+
               p
                 strong Área:
-                |  #{tarea.area}
+                | #{tarea.area || 'N/A'}
+
               p
                 strong Proveedor:
-                |  #{tarea.proveedor || 'N/A'}
+                | #{tarea.proveedor || 'N/A'}
 
             .text-group
               if tarea.descripcion
                 p
                   strong Descripción:
-                  a.view-info(href="#" data-label="Descripción" data-content=tarea.descripcion title="Haz clic para ver más detalles")
+                  a.view-info(href="#" data-label="Descripción" data-content=tarea.descripcion)
                     i.fas.fa-info-circle
                     |  Ver
+
               if tarea.observaciones
                 p
                   strong Observaciones:
-                  a.view-info(href="#" data-label="Observaciones" data-content=tarea.observaciones title="Haz clic para ver más detalles")
+                  a.view-info(href="#" data-label="Observaciones" data-content=tarea.observaciones)
                     i.fas.fa-sticky-note
                     |  Ver
 
             .status-group
               p
                 strong Prioridad:
-                - var prioridadClass = tarea.prioridad ? tarea.prioridad.toLowerCase() : "desconocida"
+                - var prioridadClass = tarea.prioridad ? tarea.prioridad.toLowerCase() : 'desconocida'
                 span.badge(class="prioridad-" + prioridadClass)= tarea.prioridad || 'N/A'
+
               p
                 strong Estado:
-                - var estadoClass = tarea.estado ? tarea.estado.toLowerCase().replace(' ', '-') : "sin-estado"
+                - var estadoClass = tarea.estado ? tarea.estado.toLowerCase().replace(' ', '-') : 'sin-estado'
                 span.badge(class="estado-" + estadoClass)= tarea.estado || 'N/A'
+
               p
                 strong Fecha de inicio:
-                - var fechaInicio = tarea.fechaInicio ? new Date(tarea.fechaInicio).toLocaleDateString('es-AR') : '—'
-                |  #{fechaInicio}
+                | #{tarea.fechaInicio ? new Date(tarea.fechaInicio).toLocaleDateString('es-AR') : '—'}
+
               p
                 strong Fecha de fin:
-                - var fechaFin = tarea.fechaFin ? new Date(tarea.fechaFin).toLocaleDateString('es-AR') : '—'
-                |  #{fechaFin}
+                | #{tarea.fechaFin ? new Date(tarea.fechaFin).toLocaleDateString('es-AR') : '—'}
 
           .card-actions
-            a(href="/tareas/edit/" + tarea._id title="Editar tarea" class="btn-action edit")
-              i.fas.fa-edit
-            form(action="/tareas/delete/" + tarea._id method="POST" class="delete-form")
-              input(type="hidden" name="_method" value="DELETE")
-              button(type="submit" title="Eliminar tarea" class="btn-action delete")
-                i.fas.fa-trash
+            - var canEdit = false
+            if user && user.rol === "Administrador"
+              - canEdit = true
+            else if tarea.empleado && tarea.empleado._id && user && user.id
+              - canEdit = (tarea.empleado._id.toString() === (user.id).toString())
+
+            if canEdit
+              a.btn-action.edit(href="/tareas/edit/" + tarea._id title="Editar tarea")
+                i.fas.fa-edit
+
+            if user && user.rol === "Administrador"
+              form.delete-form(action="/tareas/delete/" + tarea._id method="POST")
+                input(type="hidden" name="_method" value="DELETE")
+                button(type="submit" class="btn-action delete" title="Eliminar tarea")
+                  i.fas.fa-trash
 
     else
       p.no-results No se encontraron tareas.
 
-  if totalPages > 1
+  if totalPages && totalPages > 1
     .pagination
       .page-buttons
-        if page > 1
+        if page && page > 1
           a.page-link(href="?page=" + (page - 1))
-            i(class="fas fa-arrow-left fa-sm")
+            i.fas.fa-arrow-left.fa-sm
             |  Anterior
-        if page < totalPages
+
+        if page && totalPages && page < totalPages
           a.page-link(href="?page=" + (page + 1))
             |  Siguiente
-            i(class="fas fa-arrow-right fa-sm")
-      span.page-info Página #{page} de #{totalPages}
+            i.fas.fa-arrow-right.fa-sm
+
+      span.page-info Página #{page || 1} de #{totalPages || 1}
 
   +Modal('confirmModal', 'Confirmar eliminación', '¿Estás seguro de que deseas eliminar esta tarea?', 'confirm')
 

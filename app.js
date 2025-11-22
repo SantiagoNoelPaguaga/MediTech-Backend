@@ -18,10 +18,16 @@ const PORT = process.env.PORT;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("Conectado a MongoDB Atlas"))
-  .catch((err) => console.error("Error conectando a MongoDB:", err));
+const dbURI = process.env.NODE_ENV === 'test' 
+  ? process.env.MONGO_URI_TEST 
+  : process.env.MONGO_URI;
+
+  if (process.env.NODE_ENV !== 'test') {
+    mongoose
+      .connect(dbURI)
+      .then(() => console.log("Conectado a MongoDB Atlas"))
+      .catch((err) => console.error("Error conectando a MongoDB:", err));
+  }
 
 app.use(cors());
 app.use(express.static(path.join(__dirname, "public")));
@@ -50,4 +56,7 @@ app.use("/pacientes", pacientesRouter);
 app.use("/medicos", medicosRouter);
 app.use("/turnos", turnosRouter);
 
-app.listen(PORT, () => console.log(`Servidor en http://localhost:${PORT}/`));
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => console.log(`Servidor en http://localhost:${PORT}/`));
+}
+export default app;

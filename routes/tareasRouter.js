@@ -1,21 +1,60 @@
 import express from "express";
+import { authenticateToken } from "../middlewares/authMiddleware.js";
+import { authorizeRole } from "../middlewares/authorizeMiddleware.js";
+import { tareaMiddleware } from "../middlewares/tareaMiddleware.js";
 import tareaController from "../controllers/tareaController.js";
 
 const router = express.Router();
 
-router.get("/", tareaController.mostrarTareas);
+router.get("/", authenticateToken, tareaController.mostrarTareas);
 
-router.get("/filter", tareaController.filtrarTareas);
+router.get("/filter", authenticateToken, tareaController.filtrarTareas);
 
-router.get("/new", tareaController.formularioNuevaTarea);
-router.post("/new", tareaController.guardarTarea);
+router.get(
+  "/new",
+  authenticateToken,
+  authorizeRole("Administrador"),
+  tareaController.formularioNuevaTarea,
+);
 
-router.get("/edit/:id", tareaController.formularioEditarTarea);
-router.put("/edit/:id", tareaController.actualizarTarea);
+router.post(
+  "/new",
+  authenticateToken,
+  authorizeRole("Administrador"),
+  tareaController.guardarTarea,
+);
 
-router.delete("/delete/:id", tareaController.eliminarTarea);
+router.get(
+  "/edit/:id",
+  authenticateToken,
+  tareaMiddleware.loadTask,
+  tareaController.formularioEditarTarea,
+);
 
-router.get("/api/empleado/dni/:dni", tareaController.apiBuscarEmpleado);
-router.get("/api/paciente/dni/:dni", tareaController.apiBuscarPaciente);
+router.put(
+  "/edit/:id",
+  authenticateToken,
+  tareaMiddleware.loadTask,
+  tareaMiddleware.canEditTask,
+  tareaController.actualizarTarea,
+);
+
+router.delete(
+  "/delete/:id",
+  authenticateToken,
+  authorizeRole("Administrador"),
+  tareaController.eliminarTarea,
+);
+
+router.get(
+  "/api/empleado/dni/:dni",
+  authenticateToken,
+  tareaController.apiBuscarEmpleado,
+);
+router.get(
+  "/api/paciente/dni/:dni",
+  authenticateToken,
+  tareaController.apiBuscarPaciente,
+);
 
 export default router;

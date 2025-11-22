@@ -1,0 +1,45 @@
+include ../mixin/title.pug
+include ../mixin/modal.pug
+
+doctype html
+html
+    head
+        title Clínica Salud – Acceso
+        link(rel="icon" type="image/png" href="/images/logo_clinica.jpeg")
+        link(rel="stylesheet" href="/stylesheets/global.css")
+        link(rel="stylesheet" href="/stylesheets/mixin/title.css")
+        link(rel="stylesheet" href="/stylesheets/mixin/modal.css")
+        link(rel="stylesheet" href="/stylesheets/auth/login.css")
+        block headExtra
+
+    body
+        main
+            +SectionTitle('INGRESAR AL SISTEMA')
+
+            form(id="formLogin" action="/auth/login" method="POST")
+                label(for="dni") DNI
+                input(
+                    type="text"
+                    name="dni"
+                    id="dni"
+                    placeholder="Ingrese su DNI"
+                    required
+                    value=(formData && formData.dni ? formData.dni : '')
+                )
+
+                label(for="password") Contraseña
+                input(
+                    type="password"
+                    name="password"
+                    id="password"
+                    placeholder="Ingrese su contraseña"
+                    required
+                )
+
+                button(type="submit") Iniciar sesión
+
+            if modalMessage
+                +Modal('modalGeneric', modalTitle, modalMessage, modalType)
+
+        script(src="/javascripts/mixin/errorModal.js")
+        block scripts
